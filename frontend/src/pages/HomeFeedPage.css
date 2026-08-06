@@ -1,0 +1,73 @@
+.feed-main-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.feed-header {
+  position: sticky;
+  top: 24px;
+  z-index: 900;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  border-radius: var(--radius-md);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  background: rgba(13, 10, 26, 0.92);
+}
+
+.feed-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.feed-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.spinner {
+  animation: spin 1.2s linear infinite;
+  color: var(--primary);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.feed-empty-state {
+  padding: 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.feed-empty-state h3 {
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+.feed-empty-state p {
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.feed-posts-list {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 600px) {
+  .feed-header {
+    display: none; /* hidden because MobileNavbar handles page titles/branding */
+  }
+}

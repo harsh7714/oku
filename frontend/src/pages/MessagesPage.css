@@ -1,0 +1,350 @@
+.messages-main {
+  height: calc(100vh - 48px);
+  display: flex;
+}
+
+.messages-shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Conversations panel */
+.conversations-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-glass);
+  overflow-x: hidden;
+}
+
+.conversations-header {
+  padding: 20px 20px 12px;
+}
+
+.conversations-header h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.conversation-search {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px 16px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+}
+
+.conversation-search .search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.conversation-search .search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.conversation-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.conversation-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.conversation-search-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.conversations-loading,
+.conversations-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.conversations-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.conversation-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.conversation-item.active {
+  background: var(--bg-card-hover);
+  border-left-color: var(--primary);
+}
+
+.conversation-preview {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.conversation-username {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.conversation-time {
+  font-size: 0.72rem;
+  color: var(--text-dark);
+  flex-shrink: 0;
+}
+
+.conversation-last-message {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.conversation-item.unread .conversation-last-message,
+.conversation-item.unread .conversation-username {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--secondary);
+  box-shadow: 0 0 8px var(--secondary-glow);
+  flex-shrink: 0;
+}
+
+/* Chat panel */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.btn-back-mobile {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.chat-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header-username {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.chat-header-status {
+  font-size: 0.75rem;
+  color: var(--text-dark);
+}
+
+.chat-header-status.online {
+  color: var(--success);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-loading,
+.chat-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.chat-bubble-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.chat-bubble-row.mine {
+  justify-content: flex-end;
+}
+
+.chat-bubble {
+  max-width: 65%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-bubble-row.mine .chat-bubble {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border: none;
+}
+
+.chat-bubble p {
+  font-size: 0.9rem;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-bubble-time {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.6);
+  align-self: flex-end;
+}
+
+.typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 14px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-glass);
+}
+
+.chat-input {
+  flex: 1;
+}
+
+.btn-send-message {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.btn-send-message:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .messages-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .conversations-panel.hide-on-mobile,
+  .chat-panel.hide-on-mobile {
+    display: none;
+  }
+
+  .btn-back-mobile {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 600px) {
+  .messages-main {
+    height: calc(100vh - 130px);
+  }
+}

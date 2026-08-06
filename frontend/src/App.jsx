@@ -1,0 +1,123 @@
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider, useSocket } from './context/SocketContext';
+import api from './services/api';
+
+import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import RightSidebar from './components/RightSidebar';
+
+import AuthPage from './pages/AuthPage';
+import HomeFeedPage from './pages/HomeFeedPage';
+import ExplorePage from './pages/ExplorePage';
+import ProfilePage from './pages/ProfilePage';
+import MessagesPage from './pages/MessagesPage';
+import NotificationsPage from './pages/NotificationsPage';
+
+import './App.css';
+
+const AppContent = () => {
+  const { user, loading } = useAuth();
+  const { socket } = useSocket();
+  const location = useLocation();
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Load initial unread counts once authenticated
+  useEffect(() => {
+    if (!user) return;
+
+    const loadCounts = async () => {
+      try {
+        const { data } = await api.get('/notifications');
+        setUnreadNotifications(data.filter((n) => !n.isRead).length);
+      } catch (err) {
+        console.error('Error loading notification counts:', err);
+      }
+
+      try {
+        const { data } = await api.get('/messages/conversations/list');
+        const unread = data.filter(
+          (c) => !c.lastMessage.isRead && String(c.lastMessage.senderId) !== String(user._id)
+        ).length;
+        setUnreadMessages(unread);
+      } catch (err) {
+        console.error('Error loading message counts:', err);
+      }
+    };
+
+    loadCounts();
+  }, [user]);
+
+  // Live badge updates from socket events
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNotification = () => setUnreadNotifications((n) => n + 1);
+    const handleMessage = () => {
+      if (location.pathname !== '/messages') {
+        setUnreadMessages((n) => n + 1);
+      }
+    };
+
+    socket.on('receiveNotification', handleNotification);
+    socket.on('receiveMessage', handleMessage);
+
+    return () => {
+      socket.off('receiveNotification', handleNotification);
+      socket.off('receiveMessage', handleMessage);
+    };
+  }, [socket, location.pathname]);
+
+  if (loading) {
+    return (
+      <div className="app-loading-screen">
+        <Loader2 className="spinner" size={40} />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  const showRightSidebar = location.pathname !== '/messages';
+
+  return (
+    <div className={`app-container ${!showRightSidebar ? 'no-right-sidebar' : ''}`}>
+      <Navbar />
+      <Sidebar unreadNotifications={unreadNotifications} unreadMessages={unreadMessages} />
+
+      <Routes>
+        <Route path="/" element={<HomeFeedPage />} />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route
+          path="/messages"
+          element={<MessagesPage onOpen={() => setUnreadMessages(0)} />}
+        />
+        <Route
+          path="/notifications"
+          element={<NotificationsPage onReadNotifications={() => setUnreadNotifications(0)} />}
+        />
+        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {showRightSidebar && <RightSidebar />}
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <SocketProvider>
+        <AppContent />
+      </SocketProvider>
+    </AuthProvider>
+  );
+}
+
+export default App;

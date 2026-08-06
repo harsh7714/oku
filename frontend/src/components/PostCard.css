@@ -1,0 +1,228 @@
+.post-card {
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.post-avatar {
+  cursor: pointer;
+  transition: var(--transition);
+}
+.post-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.post-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  cursor: pointer;
+}
+
+.post-username {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+.post-username:hover {
+  color: var(--primary-hover);
+}
+
+.post-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.btn-delete-post {
+  background: transparent;
+  border: none;
+  color: var(--text-dark);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.btn-delete-post:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error);
+}
+
+.post-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.post-text {
+  font-size: 1.05rem;
+  white-space: pre-wrap;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.post-media-img, .post-media-video {
+  max-width: 100%;
+  max-height: 480px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--border-glass);
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid var(--border-glass);
+  padding-top: 12px;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.like-btn:hover, .like-btn.active {
+  color: var(--secondary);
+}
+.like-btn.active svg {
+  filter: drop-shadow(0 0 8px var(--secondary-glow));
+}
+
+.comment-btn:hover, .comment-btn.active {
+  color: var(--primary-hover);
+}
+
+/* Comments Section */
+.comments-section {
+  border-top: 1px solid var(--border-glass);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comment-form {
+  display: flex;
+  gap: 10px;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.btn-comment-send {
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  height: 40px;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.no-comments {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.comment-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  position: relative;
+  group: hover;
+}
+
+.comment-avatar {
+  flex-shrink: 0;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.comment-bubble {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.comment-username {
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.comment-username:hover {
+  color: var(--primary-hover);
+}
+
+.comment-date {
+  font-size: 0.7rem;
+  color: var(--text-dark);
+}
+
+.comment-text {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  word-break: break-word;
+}
+
+.btn-delete-comment {
+  background: transparent;
+  border: none;
+  color: var(--text-dark);
+  cursor: pointer;
+  align-self: center;
+  padding: 6px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.btn-delete-comment:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error);
+}

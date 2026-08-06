@@ -1,0 +1,33 @@
+.mobile-navbar {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .mobile-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border-glass);
+    margin-bottom: 12px;
+  }
+
+  .mobile-logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    cursor: pointer;
+  }
+
+  .mobile-avatar-img {
+    cursor: pointer;
+    border: 1.5px solid var(--primary);
+  }
+}

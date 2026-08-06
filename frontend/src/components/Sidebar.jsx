@@ -1,0 +1,97 @@
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, Compass, MessageCircle, Bell, User, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import './Sidebar.css';
+
+const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  if (!user) return null;
+
+  return (
+    <aside className="sidebar glass">
+      <div className="logo-section">
+        <h1 className="logo-text">Oku</h1>
+      </div>
+
+      <nav className="nav-menu">
+        <NavLink
+          to="/"
+          end
+          title="Home"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Home className="nav-icon" size={22} />
+          <span className="nav-label">Home</span>
+        </NavLink>
+
+        <NavLink
+          to="/explore"
+          title="Explore"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Compass className="nav-icon" size={22} />
+          <span className="nav-label">Explore</span>
+        </NavLink>
+
+        <NavLink
+          to="/messages"
+          title="Messages"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <div className="icon-wrapper">
+            <MessageCircle className="nav-icon" size={22} />
+            {unreadMessages > 0 && <span className="nav-badge badge">{unreadMessages}</span>}
+          </div>
+          <span className="nav-label">Messages</span>
+        </NavLink>
+
+        <NavLink
+          to="/notifications"
+          title="Notifications"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <div className="icon-wrapper">
+            <Bell className="nav-icon" size={22} />
+            {unreadNotifications > 0 && <span className="nav-badge badge">{unreadNotifications}</span>}
+          </div>
+          <span className="nav-label">Notifications</span>
+        </NavLink>
+
+        <NavLink
+          to={`/profile/${user.username}`}
+          title="Profile"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <User className="nav-icon" size={22} />
+          <span className="nav-label">Profile</span>
+        </NavLink>
+      </nav>
+
+      <div className="user-profile-summary">
+        <img 
+          src={user.profilePicture ? `http://localhost:5000${user.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.username} 
+          alt="Avatar" 
+          className="avatar" 
+          width="40" 
+          height="40" 
+        />
+        <div className="user-details">
+          <p className="username-label">@{user.username}</p>
+        </div>
+        <button className="btn-logout" onClick={handleLogout} title="Log Out">
+          <LogOut size={18} />
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default Sidebar;
