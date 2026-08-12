@@ -19,8 +19,8 @@ export const sendMessage = async (req, res) => {
     });
 
     const populatedMessage = await Message.findById(message._id)
-      .populate('senderId', 'username profilePicture')
-      .populate('receiverId', 'username profilePicture');
+      .populate('senderId', 'username profilePicture lastSeen')
+      .populate('receiverId', 'username profilePicture lastSeen');
 
     // Notify real-time socket server (if set up)
     if (global.io) {
@@ -53,8 +53,8 @@ export const getMessages = async (req, res) => {
       ],
     })
       .sort({ createdAt: 1 })
-      .populate('senderId', 'username profilePicture')
-      .populate('receiverId', 'username profilePicture');
+      .populate('senderId', 'username profilePicture lastSeen')
+      .populate('receiverId', 'username profilePicture lastSeen');
 
     // Mark partner's messages as read
     await Message.updateMany(
@@ -81,8 +81,8 @@ export const getConversations = async (req, res) => {
       $or: [{ senderId: currentUserId }, { receiverId: currentUserId }],
     })
       .sort({ createdAt: -1 })
-      .populate('senderId', 'username profilePicture')
-      .populate('receiverId', 'username profilePicture');
+      .populate('senderId', 'username profilePicture lastSeen')
+      .populate('receiverId', 'username profilePicture lastSeen');
 
     // Filter unique conversation partners and extract their last message
     const conversationMap = new Map();

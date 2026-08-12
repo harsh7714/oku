@@ -40,8 +40,8 @@
   max-height: 250px;
   overflow-y: auto;
   z-index: 100;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  border: 1px solid var(--border-active);
+  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-space) 100%);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
 .search-result-item {

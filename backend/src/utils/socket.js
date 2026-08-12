@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import User from '../models/User.js';
 
 const initSocket = (server) => {
   const io = new Server(server, {
@@ -47,6 +48,9 @@ const initSocket = (server) => {
       if (socket.userId) {
         onlineUsers.delete(socket.userId);
         io.emit('onlineUsers', Array.from(onlineUsers.keys()));
+        User.findByIdAndUpdate(socket.userId, { lastSeen: new Date() }).catch((err) =>
+          console.error('Error updating lastSeen:', err)
+        );
       }
     });
   });

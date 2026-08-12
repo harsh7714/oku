@@ -1,12 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Heart, MessageSquare, Trash2, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
+import { formatRelativeTime } from '../utils/formatRelativeTime';
+import ImageLightbox from './ImageLightbox';
 import './PostCard.css';
+
+// Splits post content on #hashtag tokens, rendering each as a clickable
+// link into Explore's tag filter while leaving the rest as plain text.
+const renderPostContent = (content, navigate) => {
+  const parts = content.split(/(#\w+)/g);
+  return parts.map((part, i) => {
+    if (/^#\w+$/.test(part)) {
+      const tag = part.slice(1).toLowerCase();
+      return (
+        <span
+          key={i}
+          className="post-hashtag"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/explore?tag=${tag}`);
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+};
 
 const PostCard = ({ post, onDelete }) => {
   const { user } = useAuth();
+  const { onlineUsers } = useSocket();
   const navigate = useNavigate();
   const [liked, setLiked] = useState(post.likes.includes(user?._id));
   const [likesCount, setLikesCount] = useState(post.likes.length);
@@ -14,14 +42,45 @@ const PostCard = ({ post, onDelete }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+  const [likeJustPopped, setLikeJustPopped] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
+  const mediaClickTimerRef = useRef(null);
 
   const handleLike = async () => {
     try {
       const { data } = await api.put(`/posts/${post._id}/like`);
       setLiked(data.liked);
       setLikesCount(data.likesCount);
+      if (data.liked) {
+        setLikeJustPopped(true);
+        setTimeout(() => setLikeJustPopped(false), 400);
+      }
     } catch (err) {
       console.error('Error liking post:', err);
+    }
+  };
+
+  // Instagram-style double-tap: always shows the burst for feedback, but
+  // only fires the API call if the post isn't already liked (never unlikes).
+  const handleDoubleTapLike = () => {
+    setShowHeartBurst(true);
+    setTimeout(() => setShowHeartBurst(false), 700);
+    if (!liked) handleLike();
+  };
+
+  // Distinguishes a single tap (open lightbox) from a double tap (like)
+  // without relying on the browser's slower native dblclick event.
+  const handleMediaClick = () => {
+    if (mediaClickTimerRef.current) {
+      clearTimeout(mediaClickTimerRef.current);
+      mediaClickTimerRef.current = null;
+      handleDoubleTapLike();
+    } else {
+      mediaClickTimerRef.current = setTimeout(() => {
+        setLightboxOpen(true);
+        mediaClickTimerRef.current = null;
+      }, 220);
     }
   };
 
@@ -66,26 +125,24 @@ const PostCard = ({ post, onDelete }) => {
   };
 
   const isOwner = post.userId._id === user?._id;
-
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
+  const isAuthorOnline = onlineUsers.includes(post.userId._id);
 
   return (
-    <div className="post-card glass fade-in">
+    <div className="post-card fade-in">
       <div className="post-header">
-        <img
-          src={post.userId.profilePicture ? `http://localhost:5000${post.userId.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username}
-          alt="Avatar"
-          className="avatar post-avatar"
-          onClick={() => navigate(`/profile/${post.userId.username}`)}
-          width="40"
-          height="40"
-        />
+        <div className="conversation-avatar-wrap" onClick={() => navigate(`/profile/${post.userId.username}`)}>
+          <img
+            src={post.userId.profilePicture ? `http://localhost:5000${post.userId.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username}
+            alt="Avatar"
+            className="avatar post-avatar"
+            width="40"
+            height="40"
+          />
+          {isAuthorOnline && <span className="presence-dot" />}
+        </div>
         <div className="post-user-info" onClick={() => navigate(`/profile/${post.userId.username}`)}>
           <span className="post-username">@{post.userId.username}</span>
-          <span className="post-time">{formatDate(post.createdAt)}</span>
+          <span className="post-time">{formatRelativeTime(post.createdAt)}</span>
         </div>
         {isOwner && (
           <button className="btn-delete-post" onClick={() => onDelete(post._id)} title="Delete Post">
@@ -95,9 +152,17 @@ const PostCard = ({ post, onDelete }) => {
       </div>
 
       <div className="post-body">
-        {post.content && <p className="post-text">{post.content}</p>}
+        {post.content && <p className="post-text">{renderPostContent(post.content, navigate)}</p>}
         {post.media && post.mediaType === 'image' && (
-          <img src={`http://localhost:5000${post.media}`} alt="Post Attachment" className="post-media-img" />
+          <div className="post-media-wrap">
+            <img
+              src={`http://localhost:5000${post.media}`}
+              alt="Post Attachment"
+              className="post-media-img"
+              onClick={handleMediaClick}
+            />
+            {showHeartBurst && <Heart className="heart-burst-icon" size={90} fill="white" />}
+          </div>
         )}
         {post.media && post.mediaType === 'video' && (
           <video src={`http://localhost:5000${post.media}`} controls className="post-media-video" />
@@ -106,7 +171,7 @@ const PostCard = ({ post, onDelete }) => {
 
       <div className="post-actions">
         <button className={`action-btn like-btn ${liked ? 'active' : ''}`} onClick={handleLike}>
-          <Heart size={18} fill={liked ? 'currentColor' : 'transparent'} />
+          <Heart size={18} fill={liked ? 'currentColor' : 'transparent'} className={likeJustPopped ? 'pop-glow' : ''} />
           <span>{likesCount}</span>
         </button>
         <button className={`action-btn comment-btn ${showComments ? 'active' : ''}`} onClick={toggleComments}>
@@ -114,6 +179,14 @@ const PostCard = ({ post, onDelete }) => {
           <span>{commentsCount}</span>
         </button>
       </div>
+
+      {lightboxOpen && post.media && (
+        <ImageLightbox
+          src={`http://localhost:5000${post.media}`}
+          alt="Post attachment enlarged"
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
 
       {showComments && (
         <div className="comments-section">
@@ -149,7 +222,7 @@ const PostCard = ({ post, onDelete }) => {
                       <span className="comment-username" onClick={() => navigate(`/profile/${comment.userId.username}`)}>
                         @{comment.userId.username}
                       </span>
-                      <span className="comment-date">{formatDate(comment.createdAt)}</span>
+                      <span className="comment-date">{formatRelativeTime(comment.createdAt)}</span>
                     </div>
                     <p className="comment-text">{comment.content}</p>
                   </div>

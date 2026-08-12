@@ -20,13 +20,11 @@
 }
 
 .auth-logo {
-  font-size: 3rem;
+  font-size: 2.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -1px;
-  text-shadow: 0 4px 20px rgba(168, 85, 247, 0.2);
+  color: var(--primary);
+  letter-spacing: -0.06em;
+  text-transform: lowercase;
   margin-bottom: 4px;
 }
 
@@ -56,9 +54,8 @@
   color: var(--text-main);
 }
 .auth-tab.active {
-  color: var(--text-main);
+  color: var(--primary);
   border-bottom-color: var(--primary);
-  text-shadow: 0 0 10px var(--primary-glow);
 }
 
 .error-alert {

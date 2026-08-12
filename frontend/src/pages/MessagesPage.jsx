@@ -4,6 +4,9 @@ import { Search, Send, Loader2, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { formatRelativeTime } from '../utils/formatRelativeTime';
+import Skeleton from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import './MessagesPage.css';
 
 const avatarSrc = (u) =>
@@ -282,14 +285,17 @@ const MessagesPage = ({ onOpen }) => {
           </div>
 
           {loadingConversations ? (
-            <div className="conversations-loading">
-              <Loader2 className="spinner" size={24} />
+            <div className="conversations-loading-list">
+              <Skeleton variant="conversation" />
+              <Skeleton variant="conversation" />
+              <Skeleton variant="conversation" />
             </div>
           ) : conversations.length === 0 ? (
-            <div className="conversations-empty">
-              <MessageCircle size={32} />
-              <p>Search for someone to start a conversation.</p>
-            </div>
+            <EmptyState
+              icon={MessageCircle}
+              title="No conversations yet"
+              subtitle="Search for someone to start a conversation."
+            />
           ) : (
             <div className="conversations-list">
               {conversations.map((c) => {
@@ -300,7 +306,10 @@ const MessagesPage = ({ onOpen }) => {
                     className={`conversation-item ${activePartner?._id === c.user._id ? 'active' : ''} ${unread ? 'unread' : ''}`}
                     onClick={() => openConversation(c.user)}
                   >
-                    <img src={avatarSrc(c.user)} alt="Avatar" className="avatar" width="44" height="44" />
+                    <div className="conversation-avatar-wrap">
+                      <img src={avatarSrc(c.user)} alt="Avatar" className="avatar" width="44" height="44" />
+                      {onlineUsers.includes(c.user._id) && <span className="presence-dot" />}
+                    </div>
                     <div className="conversation-preview">
                       <div className="conversation-top-row">
                         <span className="conversation-username">@{c.user.username}</span>
@@ -330,11 +339,14 @@ const MessagesPage = ({ onOpen }) => {
                 <button className="btn-back-mobile" onClick={() => setActivePartner(null)}>
                   &larr;
                 </button>
-                <img src={avatarSrc(activePartner)} alt="Avatar" className="avatar" width="38" height="38" />
+                <div className="conversation-avatar-wrap">
+                  <img src={avatarSrc(activePartner)} alt="Avatar" className="avatar" width="38" height="38" />
+                  {isPartnerOnline && <span className="presence-dot" />}
+                </div>
                 <div className="chat-header-info">
                   <span className="chat-header-username">@{activePartner.username}</span>
                   <span className={`chat-header-status ${isPartnerOnline ? 'online' : ''}`}>
-                    {isPartnerOnline ? 'Online' : 'Offline'}
+                    {isPartnerOnline ? 'Online' : `Last seen ${formatRelativeTime(activePartner.lastSeen)}`}
                   </span>
                 </div>
               </div>

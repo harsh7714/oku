@@ -26,11 +26,16 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: 'Post must have content or media' });
     }
 
+    const hashtags = content
+      ? [...new Set((content.match(/#(\w+)/g) || []).map((tag) => tag.slice(1).toLowerCase()))]
+      : [];
+
     const post = await Post.create({
       userId: req.user._id,
       content,
       media,
       mediaType,
+      hashtags,
     });
 
     const populatedPost = await Post.findById(post._id).populate('userId', 'username profilePicture bio');
@@ -50,32 +55,81 @@ export const getFeedPosts = async (req, res) => {
     const currentUser = await User.findById(req.user._id);
     const followingIds = currentUser.following;
 
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+
     // Get posts of user + posts of users they follow
     const posts = await Post.find({
       userId: { $in: [req.user._id, ...followingIds] },
     })
       .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit + 1)
       .populate('userId', 'username profilePicture bio');
 
-    res.json(posts);
+    const hasMore = posts.length > limit;
+    res.json({ posts: posts.slice(0, limit), hasMore, page });
   } catch (error) {
     console.error('getFeedPosts Error:', error);
     res.status(500).json({ message: 'Server error retrieving feed' });
   }
 };
 
-// @desc    Get explore posts (public timeline)
+// @desc    Get explore posts (public timeline), optionally sorted by
+//          trending engagement and/or filtered by hashtag
 // @route   GET /api/posts/explore
 // @access  Private
 export const getExplorePosts = async (req, res) => {
   try {
-    // Get general timeline posts
-    const posts = await Post.find()
-      .sort({ createdAt: -1 })
-      .populate('userId', 'username profilePicture bio')
-      .limit(50);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+    const sort = req.query.sort === 'trending' ? 'trending' : 'latest';
+    const tag = req.query.tag ? req.query.tag.toLowerCase().trim() : null;
 
-    res.json(posts);
+    const pipeline = [];
+
+    if (tag) {
+      pipeline.push({ $match: { hashtags: tag } });
+    }
+
+    if (sort === 'trending') {
+      pipeline.push({
+        $addFields: {
+          trendingScore: { $add: [{ $multiply: [{ $size: '$likes' }, 2] }, '$commentsCount'] },
+        },
+      });
+      pipeline.push({ $sort: { trendingScore: -1, createdAt: -1 } });
+    } else {
+      pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    pipeline.push({ $skip: (page - 1) * limit }, { $limit: limit + 1 });
+
+    // $lookup replaces .populate() in an aggregation pipeline
+    pipeline.push(
+      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'userId' } },
+      { $unwind: '$userId' },
+      {
+        $project: {
+          content: 1,
+          media: 1,
+          mediaType: 1,
+          likes: 1,
+          commentsCount: 1,
+          hashtags: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          'userId._id': 1,
+          'userId.username': 1,
+          'userId.profilePicture': 1,
+          'userId.bio': 1,
+        },
+      }
+    );
+
+    const posts = await Post.aggregate(pipeline);
+    const hasMore = posts.length > limit;
+    res.json({ posts: posts.slice(0, limit), hasMore, page });
   } catch (error) {
     console.error('getExplorePosts Error:', error);
     res.status(500).json({ message: 'Server error retrieving explore posts' });

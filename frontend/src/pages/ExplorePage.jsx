@@ -1,31 +1,54 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import PostCard from '../components/PostCard';
+import EmptyState from '../components/EmptyState';
+import Skeleton from '../components/Skeleton';
 import api from '../services/api';
-import { Search, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Search, Loader2, SearchX, TrendingUp, Clock, X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import './ExplorePage.css';
 
+const EXPLORE_PAGE_SIZE = 10;
+
 const ExplorePage = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchVal, setSearchVal] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const fetchExplorePosts = async () => {
-    try {
-      const { data } = await api.get('/posts/explore');
-      setPosts(data);
-    } catch (err) {
-      console.error('Error fetching explore posts:', err);
-    } finally {
-      setLoading(false);
-    }
+  const sort = searchParams.get('sort') === 'trending' ? 'trending' : 'latest';
+  const tag = searchParams.get('tag') || '';
+
+  const fetchExplorePage = useCallback(
+    async (page) => {
+      const params = new URLSearchParams({ page, limit: EXPLORE_PAGE_SIZE, sort });
+      if (tag) params.set('tag', tag);
+      const { data } = await api.get(`/posts/explore?${params.toString()}`);
+      return data;
+    },
+    [sort, tag]
+  );
+
+  const {
+    items: posts,
+    setItems: setPosts,
+    loading,
+    hasMore,
+    sentinelRef,
+  } = useInfiniteScroll(fetchExplorePage, [sort, tag]);
+
+  const setSort = (nextSort) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextSort === 'latest') next.delete('sort');
+    else next.set('sort', nextSort);
+    setSearchParams(next);
   };
 
-  useEffect(() => {
-    fetchExplorePosts();
-  }, []);
+  const clearTag = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('tag');
+    setSearchParams(next);
+  };
 
   const handleMobileSearch = async (e) => {
     const val = e.target.value;
@@ -93,23 +116,55 @@ const ExplorePage = () => {
 
       <div className="explore-header glass">
         <h2 className="explore-title">Explore Oku</h2>
+        <div className="explore-sort-tabs">
+          <button
+            className={`explore-sort-tab ${sort === 'latest' ? 'active' : ''}`}
+            onClick={() => setSort('latest')}
+          >
+            <Clock size={14} />
+            <span>Latest</span>
+          </button>
+          <button
+            className={`explore-sort-tab ${sort === 'trending' ? 'active' : ''}`}
+            onClick={() => setSort('trending')}
+          >
+            <TrendingUp size={14} />
+            <span>Trending</span>
+          </button>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="explore-loading">
-          <Loader2 className="spinner" size={32} />
-          <p>Discovering trending posts...</p>
+      {tag && (
+        <div className="explore-tag-chip glass fade-in">
+          <span>#{tag}</span>
+          <button onClick={clearTag} title="Clear tag filter">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {loading && posts.length === 0 ? (
+        <div className="explore-posts">
+          <Skeleton variant="post" />
+          <Skeleton variant="post" />
+          <Skeleton variant="post" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="explore-empty glass">
-          <h3>No public posts found</h3>
-          <p>Be the first to publish a post and start the conversation!</p>
-        </div>
+        <EmptyState
+          icon={SearchX}
+          title={tag ? `No posts tagged #${tag}` : 'No public posts found'}
+          subtitle="Be the first to publish a post and start the conversation!"
+        />
       ) : (
         <div className="explore-posts">
           {posts.map((post) => (
             <PostCard key={post._id} post={post} onDelete={handleDeletePost} />
           ))}
+          {hasMore && (
+            <div ref={sentinelRef} className="explore-load-more-sentinel">
+              {loading && <Loader2 className="spinner" size={24} />}
+            </div>
+          )}
         </div>
       )}
     </main>

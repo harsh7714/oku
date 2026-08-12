@@ -1,4 +1,5 @@
 import express from 'express';
+import { body } from 'express-validator';
 import {
   createPost,
   getFeedPosts,
@@ -14,6 +15,7 @@ import {
 } from '../controllers/commentController.js';
 import { protect } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
+import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
 
@@ -25,12 +27,33 @@ router.get('/explore', getExplorePosts);
 router.get('/user/:username', getUserPosts);
 
 // Base CRUDS
-router.post('/', upload.single('media'), createPost);
+router.post(
+  '/',
+  upload.single('media'),
+  validate([
+    body('content')
+      .optional({ checkFalsy: true })
+      .isLength({ max: 2000 })
+      .withMessage('Post content cannot exceed 2000 characters'),
+  ]),
+  createPost
+);
 router.delete('/:id', deletePost);
 router.put('/:id/like', likePost);
 
 // Comments subroutes
-router.post('/:postId/comments', addComment);
+router.post(
+  '/:postId/comments',
+  validate([
+    body('content')
+      .trim()
+      .notEmpty()
+      .withMessage('Comment content is required')
+      .isLength({ max: 500 })
+      .withMessage('Comment content cannot exceed 500 characters'),
+  ]),
+  addComment
+);
 router.get('/:postId/comments', getPostComments);
 router.delete('/:postId/comments/:id', deleteComment);
 

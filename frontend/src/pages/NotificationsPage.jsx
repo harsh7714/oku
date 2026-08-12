@@ -4,6 +4,7 @@ import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import { Bell, Heart, MessageSquare, UserPlus, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import EmptyState from '../components/EmptyState';
 import './NotificationsPage.css';
 
 const NotificationsPage = ({ onReadNotifications }) => {
@@ -125,11 +126,11 @@ const NotificationsPage = ({ onReadNotifications }) => {
           <p>Checking your notifications...</p>
         </div>
       ) : notifications.length === 0 ? (
-        <div className="notifications-empty glass">
-          <Bell className="bell-placeholder" size={48} />
-          <h3>No notifications yet</h3>
-          <p>Activities like followers, comments, and likes on your posts will appear here.</p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          title="No notifications yet"
+          subtitle="Activities like followers, comments, and likes on your posts will appear here."
+        />
       ) : (
         <div className="notifications-list">
           {notifications.map((notif) => (

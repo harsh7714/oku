@@ -1,0 +1,91 @@
+.active-now-rail {
+  padding: 16px 0 16px 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.active-now-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.active-now-scroller {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-right: 20px;
+  padding-bottom: 4px;
+}
+
+.active-now-scroller::-webkit-scrollbar {
+  height: 4px;
+}
+
+.active-now-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 64px;
+}
+
+.active-now-ring {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-full);
+  padding: 3px;
+  background: conic-gradient(from 180deg, var(--primary), var(--secondary), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.active-now-item:hover .active-now-ring {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 10px var(--primary-glow));
+}
+
+.active-now-avatar {
+  width: 52px;
+  height: 52px;
+  border: 2.5px solid var(--bg-dark);
+}
+
+.active-now-pulse {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 2px solid var(--bg-dark);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  animation: presencePulse 2s infinite;
+}
+
+@keyframes presencePulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.active-now-username {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  max-width: 64px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

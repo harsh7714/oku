@@ -18,11 +18,11 @@
   }
 
   .mobile-logo {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #a855f7, #ec4899);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary);
+    letter-spacing: -0.06em;
+    text-transform: lowercase;
     cursor: pointer;
   }
 

@@ -1,15 +1,44 @@
 .post-card {
-  padding: 20px;
+  position: relative;
+  padding: 22px 20px 20px;
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-space) 100%);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-gradient);
+  opacity: 0.85;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.post-card:hover::before {
+  opacity: 1;
 }
 
 .post-header {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.post-header .conversation-avatar-wrap {
+  cursor: pointer;
 }
 
 .post-avatar {
@@ -29,13 +58,14 @@
 }
 
 .post-username {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.05rem;
+  letter-spacing: -0.01em;
   color: var(--text-main);
   transition: var(--transition);
 }
 .post-username:hover {
-  color: var(--primary-hover);
+  color: var(--primary);
 }
 
 .post-time {
@@ -72,12 +102,52 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.post-hashtag {
+  color: var(--primary-hover);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.post-hashtag:hover {
+  text-decoration: underline;
+}
+
 .post-media-img, .post-media-video {
   max-width: 100%;
   max-height: 480px;
   border-radius: var(--radius-md);
   object-fit: cover;
-  border: 1px solid var(--border-glass);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.post-media-img {
+  cursor: zoom-in;
+  transition: var(--transition);
+}
+.post-media-img:hover {
+  filter: brightness(0.92);
+}
+
+.post-media-wrap {
+  position: relative;
+  display: flex;
+}
+
+.heart-burst-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: white;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  animation: heartBurst 0.7s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+}
+
+@keyframes heartBurst {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  35% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  60% { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0; }
 }
 
 .post-actions {
@@ -99,23 +169,29 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: var(--transition);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
 }
 
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
 }
 
-.like-btn:hover, .like-btn.active {
-  color: var(--secondary);
+.action-btn:active {
+  transform: scale(0.94);
 }
-.like-btn.active svg {
-  filter: drop-shadow(0 0 8px var(--secondary-glow));
+
+.like-btn:hover {
+  color: var(--error);
+}
+.like-btn.active {
+  color: var(--error);
+  background: rgba(255, 68, 51, 0.14);
 }
 
 .comment-btn:hover, .comment-btn.active {
-  color: var(--primary-hover);
+  color: var(--primary);
 }
 
 /* Comments Section */
@@ -175,8 +251,7 @@
 }
 
 .comment-bubble {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-glass);
+  background: var(--bg-card);
   padding: 8px 14px;
   border-radius: var(--radius-md);
   flex: 1;

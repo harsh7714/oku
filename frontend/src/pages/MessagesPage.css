@@ -35,8 +35,7 @@
   gap: 10px;
   margin: 0 16px 16px;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-glass);
+  background: var(--bg-space);
   border-radius: var(--radius-md);
 }
 
@@ -79,17 +78,10 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.conversations-loading,
-.conversations-empty {
+.conversations-loading-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex: 1;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  text-align: center;
+  padding: 4px 8px;
 }
 
 .conversations-list {
@@ -162,6 +154,23 @@
   background: var(--secondary);
   box-shadow: 0 0 8px var(--secondary-glow);
   flex-shrink: 0;
+}
+
+.conversation-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.presence-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 2px solid var(--bg-dark);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
 }
 
 /* Chat panel */
@@ -253,15 +262,14 @@
   padding: 10px 14px;
   border-radius: var(--radius-md);
   background: var(--bg-card-hover);
-  border: 1px solid var(--border-glass);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .chat-bubble-row.mine .chat-bubble {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border: none;
+  background: var(--accent-gradient);
+  color: var(--primary-ink);
 }
 
 .chat-bubble p {
@@ -272,8 +280,12 @@
 
 .chat-bubble-time {
   font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-dark);
   align-self: flex-end;
+}
+
+.chat-bubble-row.mine .chat-bubble-time {
+  color: rgba(10, 10, 10, 0.6);
 }
 
 .typing-bubble {

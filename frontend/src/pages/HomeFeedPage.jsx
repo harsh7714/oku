@@ -1,28 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import CreatePostBox from '../components/CreatePostBox';
 import PostCard from '../components/PostCard';
+import EmptyState from '../components/EmptyState';
+import Skeleton from '../components/Skeleton';
+import ActiveNowRail from '../components/ActiveNowRail';
 import api from '../services/api';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Compass } from 'lucide-react';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import './HomeFeedPage.css';
 
+const FEED_PAGE_SIZE = 10;
+
 const HomeFeedPage = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchFeed = async () => {
-    try {
-      const { data } = await api.get('/posts/feed');
-      setPosts(data);
-    } catch (err) {
-      console.error('Error fetching feed posts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFeed();
+  const fetchFeedPage = useCallback(async (page) => {
+    const { data } = await api.get(`/posts/feed?page=${page}&limit=${FEED_PAGE_SIZE}`);
+    return data;
   }, []);
+
+  const { items: posts, setItems: setPosts, loading, hasMore, sentinelRef } = useInfiniteScroll(fetchFeedPage);
 
   const handlePostCreated = (newPost) => {
     setPosts((prev) => [newPost, ...prev]);
@@ -43,23 +38,32 @@ const HomeFeedPage = () => {
         <h2 className="feed-title">Home Feed</h2>
       </div>
 
+      <ActiveNowRail />
+
       <CreatePostBox onPostCreated={handlePostCreated} />
 
-      {loading ? (
-        <div className="feed-loading-state">
-          <Loader2 className="spinner" size={32} />
-          <p>Retrieving your Oku feed...</p>
+      {loading && posts.length === 0 ? (
+        <div className="feed-posts-list">
+          <Skeleton variant="post" />
+          <Skeleton variant="post" />
+          <Skeleton variant="post" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="feed-empty-state glass">
-          <h3>Your feed is quiet</h3>
-          <p>No posts yet! Share what's happening or check the **Explore** tab to find and follow other users.</p>
-        </div>
+        <EmptyState
+          icon={Compass}
+          title="Your feed is quiet"
+          subtitle="No posts yet! Share what's happening or check the Explore tab to find and follow other users."
+        />
       ) : (
         <div className="feed-posts-list">
           {posts.map((post) => (
             <PostCard key={post._id} post={post} onDelete={handleDeletePost} />
           ))}
+          {hasMore && (
+            <div ref={sentinelRef} className="feed-load-more-sentinel">
+              {loading && <Loader2 className="spinner" size={24} />}
+            </div>
+          )}
         </div>
       )}
     </main>

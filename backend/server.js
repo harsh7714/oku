@@ -14,6 +14,7 @@ import postRoutes from './src/routes/postRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 import initSocket from './src/utils/socket.js';
+import { generalLimiter } from './src/middleware/rateLimiters.js';
 
 // Resolve __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +48,8 @@ app.use(
 // Serve uploads folder static files
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+app.use('/api', generalLimiter);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -57,6 +60,11 @@ app.use('/api/notifications', notificationRoutes);
 // Base route
 app.get('/', (req, res) => {
   res.send('Oku Social Media API is running...');
+});
+
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Error handling middleware
