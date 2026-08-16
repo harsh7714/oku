@@ -104,6 +104,22 @@
   padding: 8px 0;
 }
 
+.btn-view-all-suggestions {
+  background: transparent;
+  border: none;
+  color: var(--primary-hover);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 12px 0 0;
+  width: 100%;
+  text-align: center;
+  transition: var(--transition);
+}
+.btn-view-all-suggestions:hover {
+  color: var(--primary);
+}
+
 .suggestion-item {
   display: flex;
   align-items: center;

@@ -54,7 +54,9 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-// @desc    Delete a message (and its media, if any) permanently
+// @desc    Delete a message for the current user only ("delete for me").
+//          The document (and its media) is permanently removed once both
+//          participants have deleted it on their end.
 // @route   DELETE /api/messages/:id
 // @access  Private
 export const deleteMessage = async (req, res) => {
@@ -65,30 +67,40 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ message: 'Message not found' });
     }
 
-    if (message.senderId.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    const userId = req.user._id.toString();
+    const isParticipant =
+      message.senderId.toString() === userId || message.receiverId.toString() === userId;
+
+    if (!isParticipant && !req.user.isAdmin) {
       return res.status(401).json({ message: 'Action not authorized' });
     }
 
-    if (message.media) {
-      await deleteFileFromS3(message.media);
+    // Admin moderation removes the message outright, regardless of what the
+    // participants have individually deleted.
+    if (req.user.isAdmin && !isParticipant) {
+      if (message.media) {
+        await deleteFileFromS3(message.media);
+      }
+      await message.deleteOne();
+      return res.json({ message: 'Message deleted successfully', messageId: message._id });
     }
 
-    await message.deleteOne();
+    const alreadyDeletedFor = message.deletedFor.map((id) => id.toString());
+    if (!alreadyDeletedFor.includes(userId)) {
+      message.deletedFor.push(req.user._id);
+    }
 
-    // Notify the other participant in real time
-    if (global.io) {
-      const otherUserId =
-        message.senderId.toString() === req.user._id.toString()
-          ? message.receiverId.toString()
-          : message.senderId.toString();
-      const otherSocketId = global.onlineUsers?.get(otherUserId);
-      if (otherSocketId) {
-        global.io.to(otherSocketId).emit('messageDeleted', {
-          messageId: message._id,
-          senderId: message.senderId,
-          receiverId: message.receiverId,
-        });
+    const bothParticipantsDeleted =
+      message.deletedFor.some((id) => id.toString() === message.senderId.toString()) &&
+      message.deletedFor.some((id) => id.toString() === message.receiverId.toString());
+
+    if (bothParticipantsDeleted) {
+      if (message.media) {
+        await deleteFileFromS3(message.media);
       }
+      await message.deleteOne();
+    } else {
+      await message.save();
     }
 
     res.json({ message: 'Message deleted successfully', messageId: message._id });
@@ -106,12 +118,13 @@ export const getMessages = async (req, res) => {
     const chatPartnerId = req.params.userId;
     const currentUserId = req.user._id;
 
-    // Get messages
+    // Get messages, excluding ones this user has "deleted for me"
     const messages = await Message.find({
       $or: [
         { senderId: currentUserId, receiverId: chatPartnerId },
         { senderId: chatPartnerId, receiverId: currentUserId },
       ],
+      deletedFor: { $ne: currentUserId },
     })
       .sort({ createdAt: 1 })
       .populate('senderId', 'username profilePicture lastSeen')
@@ -137,9 +150,11 @@ export const getConversations = async (req, res) => {
   try {
     const currentUserId = req.user._id;
 
-    // Find all messages sent or received by user
+    // Find all messages sent or received by user, excluding ones they've
+    // "deleted for me"
     const messages = await Message.find({
       $or: [{ senderId: currentUserId }, { receiverId: currentUserId }],
+      deletedFor: { $ne: currentUserId },
     })
       .sort({ createdAt: -1 })
       .populate('senderId', 'username profilePicture lastSeen')
@@ -177,7 +192,9 @@ export const getConversations = async (req, res) => {
   }
 };
 
-// @desc    Permanently delete an entire conversation (and its media) with another user
+// @desc    Delete an entire conversation for the current user only
+//          ("delete for me"). Each message (and its media) is permanently
+//          removed only once both participants have deleted it.
 // @route   DELETE /api/messages/conversation/:userId
 // @access  Private
 export const deleteConversation = async (req, res) => {
@@ -190,22 +207,37 @@ export const deleteConversation = async (req, res) => {
         { senderId: currentUserId, receiverId: partnerId },
         { senderId: partnerId, receiverId: currentUserId },
       ],
+      deletedFor: { $ne: currentUserId },
     };
 
     const messages = await Message.find(filter);
 
-    await Promise.all(
-      messages.filter((m) => m.media).map((m) => deleteFileFromS3(m.media))
-    );
+    const toHardDelete = [];
+    const toSoftDelete = [];
 
-    await Message.deleteMany(filter);
+    for (const message of messages) {
+      message.deletedFor.push(currentUserId);
+      const bothParticipantsDeleted =
+        message.deletedFor.some((id) => id.toString() === message.senderId.toString()) &&
+        message.deletedFor.some((id) => id.toString() === message.receiverId.toString());
 
-    if (global.io) {
-      const partnerSocketId = global.onlineUsers?.get(partnerId);
-      if (partnerSocketId) {
-        global.io.to(partnerSocketId).emit('conversationDeleted', { partnerId: currentUserId });
+      if (bothParticipantsDeleted) {
+        toHardDelete.push(message);
+      } else {
+        toSoftDelete.push(message);
       }
     }
+
+    await Promise.all(
+      toHardDelete.filter((m) => m.media).map((m) => deleteFileFromS3(m.media))
+    );
+
+    await Promise.all([
+      toHardDelete.length
+        ? Message.deleteMany({ _id: { $in: toHardDelete.map((m) => m._id) } })
+        : Promise.resolve(),
+      ...toSoftDelete.map((m) => m.save()),
+    ]);
 
     res.json({ message: 'Conversation deleted successfully' });
   } catch (error) {

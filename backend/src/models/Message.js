@@ -31,6 +31,15 @@ const messageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Users who chose "delete for me" on this message. The document (and its
+    // media) is only actually removed once both sender and receiver are in
+    // here — until then it just stays hidden from whoever deleted it.
+    deletedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true,

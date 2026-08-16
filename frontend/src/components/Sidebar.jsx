@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Compass, MessageCircle, Bell, User, LogOut } from 'lucide-react';
+import { Home, Compass, Film, MessageCircle, Bell, User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getMediaUrl } from '../utils/mediaUrl';
 import './Sidebar.css';
@@ -41,6 +41,15 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
         >
           <Compass className="nav-icon" size={22} />
           <span className="nav-label">Explore</span>
+        </NavLink>
+
+        <NavLink
+          to="/reels"
+          title="Reels"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Film className="nav-icon" size={22} />
+          <span className="nav-label">Reels</span>
         </NavLink>
 
         <NavLink

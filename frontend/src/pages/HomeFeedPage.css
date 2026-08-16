@@ -44,6 +44,19 @@
   min-height: 40px;
 }
 
+/* The RightSidebar (which normally hosts this) is hidden below 900px, so
+   show an inline copy in the feed itself instead of losing it entirely. */
+.mobile-suggestions {
+  display: none;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .mobile-suggestions {
+    display: block;
+  }
+}
+
 @media (max-width: 600px) {
   .feed-header {
     display: none; /* hidden because MobileNavbar handles page titles/branding */

@@ -96,6 +96,20 @@
   max-width: 600px;
 }
 
+.profile-website-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--primary-hover);
+  font-weight: 600;
+  width: fit-content;
+  transition: var(--transition);
+}
+.profile-website-link:hover {
+  text-decoration: underline;
+}
+
 .profile-stats {
   display: flex;
   gap: 24px;

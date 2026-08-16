@@ -96,6 +96,50 @@
   min-height: 40px;
 }
 
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 4px;
+}
+
+.explore-grid-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--bg-card);
+}
+
+.explore-grid-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: var(--transition);
+}
+
+.explore-grid-tile:hover .explore-grid-media {
+  transform: scale(1.04);
+  filter: brightness(0.85);
+}
+
+.explore-grid-video-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: white;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
+  pointer-events: none;
+}
+
+.explore-grid-skeleton {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+}
+
 .mobile-search-wrapper {
   display: none;
 }

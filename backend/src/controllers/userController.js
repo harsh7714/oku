@@ -63,6 +63,7 @@ export const updateUserProfile = async (req, res) => {
     }
 
     user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
+    user.website = req.body.website !== undefined ? req.body.website : user.website;
 
     // Check if file uploads exist (handled by multer in routes)
     if (req.files) {
@@ -89,6 +90,7 @@ export const updateUserProfile = async (req, res) => {
       profilePicture: updatedUser.profilePicture,
       coverPicture: updatedUser.coverPicture,
       bio: updatedUser.bio,
+      website: updatedUser.website,
       followers: updatedUser.followers,
       following: updatedUser.following,
       isAdmin: updatedUser.isAdmin,

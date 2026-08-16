@@ -7,32 +7,9 @@ import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import { getMediaUrl } from '../utils/mediaUrl';
+import { renderPostContent } from '../utils/renderPostContent';
 import ImageLightbox from './ImageLightbox';
 import './PostCard.css';
-
-// Splits post content on #hashtag tokens, rendering each as a clickable
-// link into Explore's tag filter while leaving the rest as plain text.
-const renderPostContent = (content, navigate) => {
-  const parts = content.split(/(#\w+)/g);
-  return parts.map((part, i) => {
-    if (/^#\w+$/.test(part)) {
-      const tag = part.slice(1).toLowerCase();
-      return (
-        <span
-          key={i}
-          className="post-hashtag"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/explore?tag=${tag}`);
-          }}
-        >
-          {part}
-        </span>
-      );
-    }
-    return part;
-  });
-};
 
 const PostCard = ({ post, onDelete }) => {
   const { user } = useAuth();

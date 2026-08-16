@@ -5,9 +5,11 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import http from 'http';
 import path from 'path';
+import multer from 'multer';
 import { fileURLToPath } from 'url';
 
 import connectDB from './src/config/db.js';
+import { MAX_UPLOAD_SIZE_BYTES } from './src/middleware/upload.js';
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
 import postRoutes from './src/routes/postRoutes.js';
@@ -74,6 +76,14 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? `File is too large. Maximum size is ${MAX_UPLOAD_SIZE_BYTES / (1024 * 1024)}MB.`
+        : err.message;
+    return res.status(400).json({ message });
+  }
+
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode);
   res.json({

@@ -48,36 +48,33 @@ export const createPost = async (req, res) => {
   }
 };
 
-// @desc    Get user's personalized home feed (self + followed users)
+// @desc    Get the home feed — every post on Oku, newest first
 // @route   GET /api/posts/feed
 // @access  Private
 export const getFeedPosts = async (req, res) => {
   try {
-    const currentUser = await User.findById(req.user._id);
-    const followingIds = currentUser.following;
-
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
 
-    // Get posts of user + posts of users they follow
-    const posts = await Post.find({
-      userId: { $in: [req.user._id, ...followingIds] },
-    })
+    const posts = await Post.find({})
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit + 1)
       .populate('userId', 'username profilePicture bio');
 
+    // A post whose author account was since deleted populates userId as
+    // null — drop those rather than showing an unattributable post.
+    const validPosts = posts.filter((p) => p.userId);
     const hasMore = posts.length > limit;
-    res.json({ posts: posts.slice(0, limit), hasMore, page });
+    res.json({ posts: validPosts.slice(0, limit), hasMore, page });
   } catch (error) {
     console.error('getFeedPosts Error:', error);
     res.status(500).json({ message: 'Server error retrieving feed' });
   }
 };
 
-// @desc    Get explore posts (public timeline), optionally sorted by
-//          trending engagement and/or filtered by hashtag
+// @desc    Get the Explore media grid — image/video posts only, optionally
+//          sorted by trending engagement and/or filtered by hashtag
 // @route   GET /api/posts/explore
 // @access  Private
 export const getExplorePosts = async (req, res) => {
@@ -87,7 +84,8 @@ export const getExplorePosts = async (req, res) => {
     const sort = req.query.sort === 'trending' ? 'trending' : 'latest';
     const tag = req.query.tag ? req.query.tag.toLowerCase().trim() : null;
 
-    const pipeline = [];
+    // Explore is a media grid — text-only posts still show up on the Home feed.
+    const pipeline = [{ $match: { mediaType: { $ne: 'none' } } }];
 
     if (tag) {
       pipeline.push({ $match: { hashtags: tag } });
@@ -155,6 +153,29 @@ export const getUserPosts = async (req, res) => {
   } catch (error) {
     console.error('getUserPosts Error:', error);
     res.status(500).json({ message: 'Server error retrieving user posts' });
+  }
+};
+
+// @desc    Get paginated video-only posts for the Reels feed, newest first
+// @route   GET /api/posts/reels
+// @access  Private
+export const getReels = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit, 10) || 5));
+
+    const posts = await Post.find({ mediaType: 'video' })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit + 1)
+      .populate('userId', 'username profilePicture bio');
+
+    const validPosts = posts.filter((p) => p.userId);
+    const hasMore = posts.length > limit;
+    res.json({ posts: validPosts.slice(0, limit), hasMore, page });
+  } catch (error) {
+    console.error('getReels Error:', error);
+    res.status(500).json({ message: 'Server error retrieving reels' });
   }
 };
 

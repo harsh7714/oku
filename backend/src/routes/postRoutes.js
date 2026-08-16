@@ -5,6 +5,7 @@ import {
   getFeedPosts,
   getExplorePosts,
   getUserPosts,
+  getReels,
   deletePost,
   likePost,
 } from '../controllers/postController.js';
@@ -14,7 +15,7 @@ import {
   deleteComment,
 } from '../controllers/commentController.js';
 import { protect } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import upload, { verifyFileContents } from '../middleware/upload.js';
 import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
@@ -24,12 +25,14 @@ router.use(protect); // Secure all post routes
 // Timeline & explore routes
 router.get('/feed', getFeedPosts);
 router.get('/explore', getExplorePosts);
+router.get('/reels', getReels);
 router.get('/user/:username', getUserPosts);
 
 // Base CRUDS
 router.post(
   '/',
   upload.single('media'),
+  verifyFileContents,
   validate([
     body('content')
       .optional({ checkFalsy: true })

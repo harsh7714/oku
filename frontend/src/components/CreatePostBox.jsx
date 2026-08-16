@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Image, Video, X, Send } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -30,22 +30,33 @@ const CreatePostBox = ({ onPostCreated }) => {
       setMediaType('image');
     }
 
-    // Set preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setMediaPreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+    // Object URLs are cheap references to the in-memory file, unlike
+    // FileReader.readAsDataURL, which base64-encodes the whole file into a
+    // giant string and reliably hangs/crashes the tab on multi-MB videos.
+    setMediaPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   };
 
   const removeMedia = () => {
     setMediaFile(null);
-    setMediaPreview('');
+    setMediaPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return '';
+    });
     setMediaType('none');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  // Release the object URL if the user navigates away with a preview active
+  useEffect(() => {
+    return () => {
+      if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+    };
+  }, [mediaPreview]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

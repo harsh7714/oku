@@ -4,6 +4,7 @@ import PostCard from '../components/PostCard';
 import EmptyState from '../components/EmptyState';
 import Skeleton from '../components/Skeleton';
 import ActiveNowRail from '../components/ActiveNowRail';
+import SuggestionsCard from '../components/SuggestionsCard';
 import api from '../services/api';
 import { Loader2, Compass } from 'lucide-react';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
@@ -43,6 +44,8 @@ const HomeFeedPage = () => {
       </div>
 
       <ActiveNowRail />
+
+      <SuggestionsCard className="mobile-suggestions" />
 
       <CreatePostBox onPostCreated={handlePostCreated} />
 

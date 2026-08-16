@@ -8,7 +8,7 @@ import {
   deleteConversation,
 } from '../controllers/messageController.js';
 import { protect } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import upload, { verifyFileContents } from '../middleware/upload.js';
 import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
@@ -19,6 +19,7 @@ router.get('/conversations/list', getConversations);
 router.post(
   '/',
   upload.single('media'),
+  verifyFileContents,
   validate([
     body('receiverId').notEmpty().withMessage('Receiver is required'),
     body('content')

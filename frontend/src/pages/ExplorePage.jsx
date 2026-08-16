@@ -1,16 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import PostCard from '../components/PostCard';
 import EmptyState from '../components/EmptyState';
-import Skeleton from '../components/Skeleton';
+import PostViewerModal from '../components/PostViewerModal';
 import api from '../services/api';
-import { Search, Loader2, SearchX, TrendingUp, Clock, X } from 'lucide-react';
+import { Search, Loader2, SearchX, TrendingUp, Clock, X, Film } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useToast } from '../context/ToastContext';
 import { getMediaUrl } from '../utils/mediaUrl';
 import './ExplorePage.css';
 
-const EXPLORE_PAGE_SIZE = 10;
+const EXPLORE_PAGE_SIZE = 24;
 
 const ExplorePage = () => {
   const toast = useToast();
@@ -18,6 +17,7 @@ const ExplorePage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [viewerIndex, setViewerIndex] = useState(null);
 
   const sort = searchParams.get('sort') === 'trending' ? 'trending' : 'latest';
   const tag = searchParams.get('tag') || '';
@@ -69,15 +69,8 @@ const ExplorePage = () => {
     }
   };
 
-  const handleDeletePost = async (postId) => {
-    try {
-      await api.delete(`/posts/${postId}`);
-      setPosts((prev) => prev.filter((p) => p._id !== postId));
-      toast.success('Post deleted');
-    } catch (err) {
-      console.error('Error deleting explore post:', err);
-      toast.error(err.response?.data?.message || 'Failed to delete post');
-    }
+  const handleDeletePost = (postId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
   };
 
   return (
@@ -150,28 +143,51 @@ const ExplorePage = () => {
       )}
 
       {loading && posts.length === 0 ? (
-        <div className="explore-posts">
-          <Skeleton variant="post" />
-          <Skeleton variant="post" />
-          <Skeleton variant="post" />
+        <div className="explore-grid">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="skeleton-block explore-grid-skeleton" />
+          ))}
         </div>
       ) : posts.length === 0 ? (
         <EmptyState
           icon={SearchX}
-          title={tag ? `No posts tagged #${tag}` : 'No public posts found'}
-          subtitle="Be the first to publish a post and start the conversation!"
+          title={tag ? `No posts tagged #${tag}` : 'No media posts found'}
+          subtitle="Posts with a photo or video will show up here."
         />
       ) : (
-        <div className="explore-posts">
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} onDelete={handleDeletePost} />
-          ))}
+        <>
+          <div className="explore-grid">
+            {posts.map((post, i) => (
+              <button key={post._id} className="explore-grid-tile" onClick={() => setViewerIndex(i)}>
+                {post.mediaType === 'video' ? (
+                  <>
+                    <video src={getMediaUrl(post.media)} className="explore-grid-media" muted preload="metadata" />
+                    <Film className="explore-grid-video-icon" size={16} />
+                  </>
+                ) : (
+                  <img src={getMediaUrl(post.media)} alt="" className="explore-grid-media" loading="lazy" />
+                )}
+              </button>
+            ))}
+          </div>
           {hasMore && (
             <div ref={sentinelRef} className="explore-load-more-sentinel">
               {loading && <Loader2 className="spinner" size={24} />}
             </div>
           )}
-        </div>
+        </>
+      )}
+
+      {viewerIndex !== null && (
+        <PostViewerModal
+          posts={posts}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+          onDelete={(postId) => {
+            handleDeletePost(postId);
+            setViewerIndex(null);
+          }}
+        />
       )}
     </main>
   );

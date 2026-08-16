@@ -7,8 +7,9 @@ import FollowListModal from '../components/FollowListModal';
 import ImageLightbox from '../components/ImageLightbox';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
-import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText } from 'lucide-react';
+import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon } from 'lucide-react';
 import { getMediaUrl } from '../utils/mediaUrl';
+import { toSafeHref } from '../utils/toSafeHref';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
@@ -26,6 +27,7 @@ const ProfilePage = () => {
   
   // Edit Form State
   const [editBio, setEditBio] = useState('');
+  const [editWebsite, setEditWebsite] = useState('');
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [profilePicPreview, setProfilePicPreview] = useState('');
   const [coverPicFile, setCoverPicFile] = useState(null);
@@ -40,6 +42,7 @@ const ProfilePage = () => {
       const userRes = await api.get(`/users/profile/${username}`);
       setProfileUser(userRes.data);
       setEditBio(userRes.data.bio || '');
+      setEditWebsite(userRes.data.website || '');
 
       // Fetch user's posts
       const postsRes = await api.get(`/posts/user/${username}`);
@@ -123,6 +126,7 @@ const ProfilePage = () => {
     
     const formData = new FormData();
     formData.append('bio', editBio);
+    formData.append('website', editWebsite);
     if (profilePicFile) {
       formData.append('profilePicture', profilePicFile);
     }
@@ -235,7 +239,18 @@ const ProfilePage = () => {
           <div className="profile-text-details">
             <h2 className="profile-username">@{profileUser.username}</h2>
             {profileUser.bio && <p className="profile-bio">{profileUser.bio}</p>}
-            
+            {profileUser.website && toSafeHref(profileUser.website) && (
+              <a
+                href={toSafeHref(profileUser.website)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="profile-website-link"
+              >
+                <LinkIcon size={14} />
+                <span>{profileUser.website}</span>
+              </a>
+            )}
+
             <div className="profile-stats">
               <button className="stat-item stat-item-btn" onClick={() => setFollowModalTab('following')}>
                 <span className="stat-count">{profileUser.following.length}</span>
@@ -379,6 +394,18 @@ const ProfilePage = () => {
                   maxLength={160}
                 />
                 <span className="char-count">{editBio.length}/160</span>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Website</label>
+                <input
+                  type="text"
+                  placeholder="yoursite.com"
+                  value={editWebsite}
+                  onChange={(e) => setEditWebsite(e.target.value)}
+                  className="form-input"
+                  maxLength={100}
+                />
               </div>
 
               <button type="submit" className="btn btn-primary btn-save-profile" disabled={saving}>

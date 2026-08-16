@@ -12,6 +12,7 @@ import RightSidebar from './components/RightSidebar';
 import AuthPage from './pages/AuthPage';
 import HomeFeedPage from './pages/HomeFeedPage';
 import ExplorePage from './pages/ExplorePage';
+import ReelsPage from './pages/ReelsPage';
 import ProfilePage from './pages/ProfilePage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
@@ -83,7 +84,7 @@ const AppContent = () => {
     return <AuthPage />;
   }
 
-  const showRightSidebar = location.pathname !== '/messages';
+  const showRightSidebar = location.pathname !== '/messages' && location.pathname !== '/reels';
 
   return (
     <div className={`app-container ${!showRightSidebar ? 'no-right-sidebar' : ''}`}>
@@ -93,6 +94,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<HomeFeedPage />} />
         <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/reels" element={<ReelsPage />} />
         <Route
           path="/messages"
           element={<MessagesPage onOpen={() => setUnreadMessages(0)} />}

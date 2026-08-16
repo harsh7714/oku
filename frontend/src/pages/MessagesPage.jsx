@@ -214,19 +214,33 @@ const MessagesPage = ({ onOpen }) => {
     setMediaFile(file);
     setMediaType(file.type.split('/')[0] === 'video' ? 'video' : 'image');
 
-    const reader = new FileReader();
-    reader.onloadend = () => setMediaPreview(reader.result);
-    reader.readAsDataURL(file);
+    // Object URLs are cheap references to the in-memory file, unlike
+    // FileReader.readAsDataURL, which base64-encodes the whole file into a
+    // giant string and reliably hangs/crashes the tab on multi-MB videos.
+    setMediaPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   };
 
   const removeMedia = () => {
     setMediaFile(null);
-    setMediaPreview('');
+    setMediaPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return '';
+    });
     setMediaType('none');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  // Release the object URL if the user navigates away with a preview active
+  useEffect(() => {
+    return () => {
+      if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+    };
+  }, [mediaPreview]);
 
   const handleDraftChange = (e) => {
     setDraft(e.target.value);
@@ -287,7 +301,7 @@ const MessagesPage = ({ onOpen }) => {
       });
     } catch (err) {
       console.error('Error sending message:', err);
-      toast.error('Failed to send message');
+      toast.error(err.response?.data?.message || 'Failed to send message');
     } finally {
       setSending(false);
     }

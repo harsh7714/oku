@@ -9,7 +9,7 @@ import {
   getSuggestedUsers,
 } from '../controllers/userController.js';
 import { protect } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import upload, { verifyFileContents } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -26,6 +26,7 @@ router.put(
     { name: 'profilePicture', maxCount: 1 },
     { name: 'coverPicture', maxCount: 1 },
   ]),
+  verifyFileContents,
   updateUserProfile
 );
 
