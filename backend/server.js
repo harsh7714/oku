@@ -28,6 +28,11 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// Trust the first hop (Render/Railway/etc. reverse proxy) so express-rate-limit
+// and req.ip see the real client IP instead of collapsing every user onto the
+// proxy's IP, which would share one rate-limit bucket across all users.
+app.set('trust proxy', 1);
+
 // Initialize Socket.io
 initSocket(server);
 
