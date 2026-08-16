@@ -15,7 +15,14 @@ export const getUserProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user);
+    // A follower/following entry whose account was since deleted populates
+    // as null — drop those rather than shipping an unattributable entry
+    // the frontend can't render.
+    const userJson = user.toJSON();
+    userJson.followers = userJson.followers.filter(Boolean);
+    userJson.following = userJson.following.filter(Boolean);
+
+    res.json(userJson);
   } catch (error) {
     console.error('getUserProfile Error:', error);
     res.status(500).json({ message: 'Server error retrieving profile' });
@@ -35,7 +42,12 @@ export const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+
+    const userJson = user.toJSON();
+    userJson.followers = userJson.followers.filter(Boolean);
+    userJson.following = userJson.following.filter(Boolean);
+
+    res.json(userJson);
   } catch (error) {
     console.error('getUserById Error:', error);
     res.status(500).json({ message: 'Server error retrieving user' });

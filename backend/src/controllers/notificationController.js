@@ -10,7 +10,11 @@ export const getNotifications = async (req, res) => {
       .populate('senderId', 'username profilePicture')
       .populate('postId', 'content media mediaType');
 
-    res.json(notifications);
+    // A notification whose sender account was since deleted populates
+    // senderId as null — drop those rather than showing an unattributable
+    // notification (and crashing the page that assumes it's always there).
+    const validNotifications = notifications.filter((n) => n.senderId);
+    res.json(validNotifications);
   } catch (error) {
     console.error('getNotifications Error:', error);
     res.status(500).json({ message: 'Server error retrieving notifications' });
