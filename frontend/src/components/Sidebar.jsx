@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Compass, Film, MessageCircle, Bell, User, LogOut } from 'lucide-react';
+import { Home, Compass, Film, MessageCircle, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getMediaUrl } from '../utils/mediaUrl';
 import './Sidebar.css';
@@ -67,7 +67,7 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
         <NavLink
           to="/notifications"
           title="Notifications"
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          className={({ isActive }) => `nav-item nav-item-notifications ${isActive ? 'active' : ''}`}
         >
           <div className="icon-wrapper">
             <Bell className="nav-icon" size={22} />
@@ -79,9 +79,15 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
         <NavLink
           to={`/profile/${user.username}`}
           title="Profile"
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          className={({ isActive }) => `nav-item nav-item-profile ${isActive ? 'active' : ''}`}
         >
-          <User className="nav-icon" size={22} />
+          <img
+            src={user.profilePicture ? getMediaUrl(user.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.username}
+            alt=""
+            className="nav-profile-avatar"
+            width="22"
+            height="22"
+          />
           <span className="nav-label">Profile</span>
         </NavLink>
       </nav>

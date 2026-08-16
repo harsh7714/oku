@@ -71,6 +71,21 @@
   color: var(--primary-ink);
 }
 
+.nav-profile-avatar {
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid transparent;
+  transition: var(--transition);
+}
+
+.nav-item:hover .nav-profile-avatar {
+  border-color: var(--primary);
+}
+.nav-item.active .nav-profile-avatar {
+  border-color: var(--primary-ink);
+}
+
 .icon-wrapper {
   position: relative;
   display: inline-flex;
@@ -210,5 +225,10 @@
   }
   .nav-item.active .lucide-compass path {
     fill: var(--bg-dark);
+  }
+
+  /* Notifications moves to the top-right of the mobile navbar instead */
+  .nav-item-notifications {
+    display: none;
   }
 }

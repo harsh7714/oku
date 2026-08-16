@@ -32,8 +32,19 @@
     text-transform: lowercase;
   }
 
-  .mobile-avatar-img {
+  .mobile-notification-btn {
+    position: relative;
+    display: inline-flex;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
     cursor: pointer;
-    border: 1.5px solid var(--primary);
+    padding: 4px;
+  }
+
+  .mobile-notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
   }
 }

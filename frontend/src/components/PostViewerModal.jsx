@@ -25,6 +25,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
   const [commentsCount, setCommentsCount] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [showHeartBurst, setShowHeartBurst] = useState(false);
+  const [captionExpanded, setCaptionExpanded] = useState(false);
   const mediaClickTimerRef = useRef(null);
 
   // Reset per-post state whenever the viewer moves to a different post
@@ -34,6 +35,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
     setLikesCount(post.likes.length);
     setCommentsCount(post.commentsCount || 0);
     setComments([]);
+    setCaptionExpanded(false);
 
     api
       .get(`/posts/${post._id}/comments`)
@@ -198,7 +200,16 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
           </div>
 
           {post.content && (
-            <p className="post-viewer-caption">{renderPostContent(post.content, navigate)}</p>
+            <div className="post-viewer-caption-wrap">
+              <p className={`post-viewer-caption ${captionExpanded ? '' : 'clamped'}`}>
+                {renderPostContent(post.content, navigate)}
+              </p>
+              {post.content.length > 220 && (
+                <button className="post-text-toggle" onClick={() => setCaptionExpanded((e) => !e)}>
+                  {captionExpanded ? 'less' : 'more'}
+                </button>
+              )}
+            </div>
           )}
 
           <div className="post-viewer-comments">

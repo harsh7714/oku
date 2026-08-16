@@ -25,6 +25,7 @@ const PostCard = ({ post, onDelete }) => {
   const [likeJustPopped, setLikeJustPopped] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
+  const [captionExpanded, setCaptionExpanded] = useState(false);
   const mediaClickTimerRef = useRef(null);
 
   const handleLike = async () => {
@@ -136,7 +137,18 @@ const PostCard = ({ post, onDelete }) => {
       </div>
 
       <div className="post-body">
-        {post.content && <p className="post-text">{renderPostContent(post.content, navigate)}</p>}
+        {post.content && (
+          <div className="post-text-wrap">
+            <p className={`post-text ${captionExpanded ? '' : 'clamped'}`}>
+              {renderPostContent(post.content, navigate)}
+            </p>
+            {post.content.length > 220 && (
+              <button className="post-text-toggle" onClick={() => setCaptionExpanded((e) => !e)}>
+                {captionExpanded ? 'less' : 'more'}
+              </button>
+            )}
+          </div>
+        )}
         {post.media && post.mediaType === 'image' && (
           <div className="post-media-wrap">
             <img

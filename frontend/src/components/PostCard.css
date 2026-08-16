@@ -102,6 +102,27 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.post-text.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.post-text-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 0 0;
+}
+.post-text-toggle:hover {
+  color: var(--text-main);
+}
+
 .post-hashtag {
   color: var(--primary-hover);
   font-weight: 600;

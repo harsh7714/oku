@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import PostCard from '../components/PostCard';
+import CreatePostBox from '../components/CreatePostBox';
 import FollowListModal from '../components/FollowListModal';
-import ImageLightbox from '../components/ImageLightbox';
+import PostViewerModal from '../components/PostViewerModal';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
-import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon } from 'lucide-react';
+import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon } from 'lucide-react';
 import { getMediaUrl } from '../utils/mediaUrl';
 import { toSafeHref } from '../utils/toSafeHref';
 import './ProfilePage.css';
@@ -23,7 +24,8 @@ const ProfilePage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [followModalTab, setFollowModalTab] = useState(null);
   const [viewMode, setViewMode] = useState('list');
-  const [gridLightboxSrc, setGridLightboxSrc] = useState(null);
+  const [mediaFilter, setMediaFilter] = useState('all');
+  const [viewerIndex, setViewerIndex] = useState(null);
   
   // Edit Form State
   const [editBio, setEditBio] = useState('');
@@ -57,7 +59,22 @@ const ProfilePage = () => {
 
   useEffect(() => {
     fetchProfile();
+    setMediaFilter('all');
   }, [username]);
+
+  const filteredPosts =
+    mediaFilter === 'all' ? posts : posts.filter((p) => p.mediaType === mediaFilter);
+
+  // The grid tile viewer only makes sense for posts with actual media — a
+  // text-only post would have nothing to show, so it's excluded from
+  // navigation and just falls back to list view when tapped.
+  const mediaPosts = filteredPosts.filter((p) => p.mediaType !== 'none');
+
+  const MEDIA_FILTERS = [
+    { key: 'all', label: 'Posts', icon: Grid3x3 },
+    { key: 'image', label: 'Photos', icon: ImageIcon },
+    { key: 'video', label: 'Videos', icon: Film },
+  ];
 
   const isOwnProfile = currentUser?.username === username;
   const isFollowing = profileUser?.followers?.some((f) => f._id === currentUser?._id);
@@ -160,6 +177,10 @@ const ProfilePage = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePostCreated = (newPost) => {
+    setPosts((prev) => [newPost, ...prev]);
   };
 
   const handleDeletePost = async (postId) => {
@@ -269,6 +290,8 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {isOwnProfile && <CreatePostBox onPostCreated={handlePostCreated} />}
+
       {/* User Posts list */}
       <div className="profile-posts-header">
         <h3 className="profile-posts-title">Posts by @{profileUser.username}</h3>
@@ -292,38 +315,64 @@ const ProfilePage = () => {
         )}
       </div>
 
+      {posts.length > 0 && (
+        <div className="profile-media-tabs">
+          {MEDIA_FILTERS.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              className={`profile-media-tab ${mediaFilter === key ? 'active' : ''}`}
+              onClick={() => setMediaFilter(key)}
+            >
+              <Icon size={16} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {posts.length === 0 ? (
         <EmptyState
           icon={FileText}
           title="No posts yet"
           subtitle={isOwnProfile ? "Share your first post to get started." : `@${profileUser.username} hasn't posted anything yet.`}
         />
+      ) : filteredPosts.length === 0 ? (
+        <EmptyState
+          icon={mediaFilter === 'image' ? ImageIcon : Film}
+          title={`No ${mediaFilter === 'image' ? 'photos' : 'videos'} yet`}
+          subtitle={
+            isOwnProfile
+              ? `Posts with a ${mediaFilter === 'image' ? 'photo' : 'video'} will show up here.`
+              : `@${profileUser.username} hasn't posted any ${mediaFilter === 'image' ? 'photos' : 'videos'} yet.`
+          }
+        />
       ) : viewMode === 'list' ? (
         <div className="profile-posts-list">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <PostCard key={post._id} post={post} onDelete={handleDeletePost} />
           ))}
         </div>
       ) : (
         <div className="profile-posts-grid">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <button
               key={post._id}
               className="profile-grid-tile"
               onClick={() => {
-                if (post.mediaType === 'image') {
-                  setGridLightboxSrc(getMediaUrl(post.media));
-                } else {
+                if (post.mediaType === 'none') {
                   setViewMode('list');
+                } else {
+                  setViewerIndex(mediaPosts.findIndex((p) => p._id === post._id));
                 }
               }}
             >
               {post.mediaType === 'image' ? (
-                <img src={getMediaUrl(post.media)} alt="Post thumbnail" className="profile-grid-img" />
+                <img src={getMediaUrl(post.media)} alt="Post thumbnail" className="profile-grid-media" />
               ) : post.mediaType === 'video' ? (
-                <div className="profile-grid-placeholder profile-grid-video">
-                  <Film size={26} />
-                </div>
+                <>
+                  <video src={getMediaUrl(post.media)} className="profile-grid-media" muted preload="metadata" />
+                  <Film className="profile-grid-video-icon" size={16} />
+                </>
               ) : (
                 <div className="profile-grid-placeholder profile-grid-text">
                   <FileText size={18} className="profile-grid-text-icon" />
@@ -335,8 +384,16 @@ const ProfilePage = () => {
         </div>
       )}
 
-      {gridLightboxSrc && (
-        <ImageLightbox src={gridLightboxSrc} alt="Post attachment enlarged" onClose={() => setGridLightboxSrc(null)} />
+      {viewerIndex !== null && (
+        <PostViewerModal
+          posts={mediaPosts}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+          onDelete={(postId) => {
+            handleDeletePost(postId);
+            setViewerIndex(null);
+          }}
+        />
       )}
 
       {/* Edit Profile Modal */}

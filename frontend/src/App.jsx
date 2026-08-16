@@ -88,7 +88,7 @@ const AppContent = () => {
 
   return (
     <div className={`app-container ${!showRightSidebar ? 'no-right-sidebar' : ''}`}>
-      <Navbar />
+      <Navbar unreadNotifications={unreadNotifications} />
       <Sidebar unreadNotifications={unreadNotifications} unreadMessages={unreadMessages} />
 
       <Routes>
