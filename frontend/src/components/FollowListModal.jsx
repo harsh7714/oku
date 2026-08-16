@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, UserPlus, UserCheck, Search, Users } from 'lucide-react';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './FollowListModal.css';
 
 const FollowListModal = ({ activeTab, followers, following, currentUser, onClose, onFollowToggle, profileUsername }) => {
@@ -72,7 +73,7 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
                     <img
                       src={
                         u.profilePicture
-                          ? `http://localhost:5000${u.profilePicture}`
+                          ? getMediaUrl(u.profilePicture)
                           : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + u.username
                       }
                       alt="Avatar"

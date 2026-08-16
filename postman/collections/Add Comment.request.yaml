@@ -1,0 +1,21 @@
+$kind: http-request
+name: Add Comment
+description: |
+  Add a comment to a post.
+
+  201  Created comment object
+  400  Comment content is required / exceeds 500 characters
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/posts/66f1a2b3c4d5e6f7a8b9c0d1/comments
+method: POST
+body:
+  type: json
+  content: |
+    {
+        "content": "Great post!"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000130000

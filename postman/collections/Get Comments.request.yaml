@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Comments
+description: |
+  List all comments on a post.
+
+  200  Array of comments
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/posts/66f1a2b3c4d5e6f7a8b9c0d1/comments
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000140000

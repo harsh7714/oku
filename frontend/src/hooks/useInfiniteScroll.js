@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useToast } from '../context/ToastContext';
 
 // Generic infinite-scroll hook. `fetchPage(page)` must resolve to
 // `{ posts, hasMore }`. Pass `deps` to reset and refetch from page 1
 // whenever they change (e.g. switching Explore tabs or hashtag filters).
 export function useInfiniteScroll(fetchPage, deps = []) {
+  const toast = useToast();
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -23,6 +25,7 @@ export function useInfiniteScroll(fetchPage, deps = []) {
         setPage(pageToLoad);
       } catch (err) {
         console.error('Infinite scroll fetch error:', err);
+        toast.error('Failed to load posts');
       } finally {
         setLoading(false);
         loadingRef.current = false;

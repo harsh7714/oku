@@ -7,11 +7,13 @@ import ActiveNowRail from '../components/ActiveNowRail';
 import api from '../services/api';
 import { Loader2, Compass } from 'lucide-react';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { useToast } from '../context/ToastContext';
 import './HomeFeedPage.css';
 
 const FEED_PAGE_SIZE = 10;
 
 const HomeFeedPage = () => {
+  const toast = useToast();
   const fetchFeedPage = useCallback(async (page) => {
     const { data } = await api.get(`/posts/feed?page=${page}&limit=${FEED_PAGE_SIZE}`);
     return data;
@@ -27,8 +29,10 @@ const HomeFeedPage = () => {
     try {
       await api.delete(`/posts/${postId}`);
       setPosts((prev) => prev.filter((p) => p._id !== postId));
+      toast.success('Post deleted');
     } catch (err) {
       console.error('Error deleting post:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete post');
     }
   };
 

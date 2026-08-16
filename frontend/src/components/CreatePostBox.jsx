@@ -2,10 +2,13 @@ import React, { useState, useRef } from 'react';
 import { Image, Video, X, Send } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './CreatePostBox.css';
 
 const CreatePostBox = ({ onPostCreated }) => {
   const { user } = useAuth();
+  const toast = useToast();
   const [content, setContent] = useState('');
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaPreview, setMediaPreview] = useState('');
@@ -66,8 +69,10 @@ const CreatePostBox = ({ onPostCreated }) => {
       if (onPostCreated) {
         onPostCreated(data);
       }
+      toast.success('Post created!');
     } catch (err) {
       console.error('Error creating post:', err);
+      toast.error(err.response?.data?.message || 'Failed to create post');
     } finally {
       setLoading(false);
     }
@@ -78,7 +83,7 @@ const CreatePostBox = ({ onPostCreated }) => {
       <form onSubmit={handleSubmit}>
         <div className="post-input-row">
           <img
-            src={user?.profilePicture ? `http://localhost:5000${user.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user?.username}
+            src={user?.profilePicture ? getMediaUrl(user.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user?.username}
             alt="Avatar"
             className="avatar"
             width="42"

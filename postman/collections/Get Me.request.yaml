@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Me
+description: |
+  200  User found and returned
+  401  "Not authorized, no token provided" / "Not authorized, token failed" — missing, invalid, or expired token
+  404  "User not found" — token valid but user was deleted
+  500  Server error
+url: http://localhost:5000/api/auth/me
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 3114334857819022

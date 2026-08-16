@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 import { Bell, Heart, MessageSquare, UserPlus, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import EmptyState from '../components/EmptyState';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './NotificationsPage.css';
 
 const NotificationsPage = ({ onReadNotifications }) => {
   const { user } = useAuth();
   const { socket } = useSocket();
+  const toast = useToast();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -24,6 +27,7 @@ const NotificationsPage = ({ onReadNotifications }) => {
       }
     } catch (err) {
       console.error('Error fetching notifications:', err);
+      toast.error('Failed to load notifications');
     } finally {
       setLoading(false);
     }
@@ -59,6 +63,7 @@ const NotificationsPage = ({ onReadNotifications }) => {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {
       console.error('Error marking notifications as read:', err);
+      toast.error('Failed to mark notifications as read');
     }
   };
 
@@ -142,7 +147,7 @@ const NotificationsPage = ({ onReadNotifications }) => {
               <div className="notif-details">
                 {getNotificationIcon(notif.type)}
                 <img
-                  src={notif.senderId.profilePicture ? `http://localhost:5000${notif.senderId.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + notif.senderId.username}
+                  src={notif.senderId.profilePicture ? getMediaUrl(notif.senderId.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + notif.senderId.username}
                   alt="Avatar"
                   className="avatar notif-avatar"
                   width="36"

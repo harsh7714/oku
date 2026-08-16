@@ -1,0 +1,16 @@
+$kind: http-request
+name: Delete Comment
+description: |
+  Delete a comment (comment author or post owner only).
+
+  200  Comment deleted
+  401  Not authorized, no token provided
+  403  Not permitted to delete this comment
+  404  Comment not found
+url: http://localhost:5000/api/posts/66f1a2b3c4d5e6f7a8b9c0d1/comments/66f1a2b3c4d5e6f7a8b9c0d2
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000150000

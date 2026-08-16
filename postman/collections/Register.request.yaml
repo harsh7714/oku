@@ -1,0 +1,18 @@
+$kind: http-request
+name: Register
+description: ''
+url: http://localhost:5000/api/auth/register
+method: POST
+body:
+  type: json
+  content: |
+    {
+        "username": "sarah_dev",
+        "email": "sarah.dev@example.com",
+        "password": "SecurePass123"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: '{{json_web_token_1btp}}'
+order: 1786880436410

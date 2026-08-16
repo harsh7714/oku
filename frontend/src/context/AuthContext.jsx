@@ -1,11 +1,13 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
+import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   // Load user on startup
   useEffect(() => {
@@ -39,10 +41,9 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (err) {
       console.error('Login error:', err);
-      return {
-        success: false,
-        message: err.response?.data?.message || 'Login failed, check credentials',
-      };
+      const message = err.response?.data?.message || 'Login failed, check credentials';
+      toast.error(message);
+      return { success: false, message };
     }
   };
 
@@ -55,10 +56,9 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (err) {
       console.error('Registration error:', err);
-      return {
-        success: false,
-        message: err.response?.data?.message || 'Registration failed',
-      };
+      const message = err.response?.data?.message || 'Registration failed';
+      toast.error(message);
+      return { success: false, message };
     }
   };
 
@@ -85,10 +85,9 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (err) {
       console.error('Profile update error:', err);
-      return {
-        success: false,
-        message: err.response?.data?.message || 'Failed to update profile',
-      };
+      const message = err.response?.data?.message || 'Failed to update profile';
+      toast.error(message);
+      return { success: false, message };
     }
   };
 

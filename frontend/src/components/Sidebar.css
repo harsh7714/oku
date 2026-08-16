@@ -9,7 +9,14 @@
 }
 
 .logo-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 32px;
+}
+
+.logo-icon {
+  flex-shrink: 0;
 }
 
 .logo-text {
@@ -195,10 +202,13 @@
   .nav-item.active {
     background: transparent;
     border: none;
-    border-bottom: 3px solid var(--primary);
     box-shadow: none;
   }
   .nav-item.active .nav-icon {
     color: var(--primary);
+    fill: var(--primary);
+  }
+  .nav-item.active .lucide-compass path {
+    fill: var(--bg-dark);
   }
 }

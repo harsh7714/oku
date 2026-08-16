@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Explore Posts
+description: |
+  Paginated public posts. sort is 'latest' or 'trending'; tag optionally filters by hashtag.
+
+  200  { posts: [...], hasMore: boolean }
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/posts/explore?page=1&limit=10&sort=latest
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000080000

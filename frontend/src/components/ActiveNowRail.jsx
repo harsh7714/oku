@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './ActiveNowRail.css';
 
 const avatarSrc = (u) =>
   u?.profilePicture
-    ? `http://localhost:5000${u.profilePicture}`
+    ? getMediaUrl(u.profilePicture)
     : `https://api.dicebear.com/7.x/bottts/svg?seed=${u?.username}`;
 
 // A horizontal rail of currently-online people the user follows — an

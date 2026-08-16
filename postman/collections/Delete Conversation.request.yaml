@@ -1,0 +1,14 @@
+$kind: http-request
+name: Delete Conversation
+description: |
+  Delete an entire conversation with a given user.
+
+  200  Conversation deleted
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/messages/conversation/66f1a2b3c4d5e6f7a8b9c0d1
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000200000

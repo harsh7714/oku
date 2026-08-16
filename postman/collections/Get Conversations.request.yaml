@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Conversations
+description: |
+  List all conversations for the current user, with last-message previews.
+
+  200  Array of conversations
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/messages/conversations/list
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000160000

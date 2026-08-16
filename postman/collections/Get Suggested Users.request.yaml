@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Suggested Users
+description: |
+  Users to follow, excluding the current user and people already followed.
+
+  200  Array of suggested users
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/users/suggestions
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000010000

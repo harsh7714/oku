@@ -6,11 +6,14 @@ import api from '../services/api';
 import { Search, Loader2, SearchX, TrendingUp, Clock, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { useToast } from '../context/ToastContext';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './ExplorePage.css';
 
 const EXPLORE_PAGE_SIZE = 10;
 
 const ExplorePage = () => {
+  const toast = useToast();
   const [searchVal, setSearchVal] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
@@ -59,6 +62,7 @@ const ExplorePage = () => {
         setSearchResults(data);
       } catch (err) {
         console.error('Mobile search error:', err);
+        toast.error('Search failed, try again');
       }
     } else {
       setSearchResults([]);
@@ -69,8 +73,10 @@ const ExplorePage = () => {
     try {
       await api.delete(`/posts/${postId}`);
       setPosts((prev) => prev.filter((p) => p._id !== postId));
+      toast.success('Post deleted');
     } catch (err) {
       console.error('Error deleting explore post:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete post');
     }
   };
 
@@ -99,7 +105,7 @@ const ExplorePage = () => {
                 }}
               >
                 <img
-                  src={res.profilePicture ? `http://localhost:5000${res.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + res.username}
+                  src={res.profilePicture ? getMediaUrl(res.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + res.username}
                   alt="Avatar"
                   className="avatar"
                   width="32"

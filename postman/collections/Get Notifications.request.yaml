@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Notifications
+description: |
+  List notifications for the current user.
+
+  200  Array of notifications
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/notifications
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000210000

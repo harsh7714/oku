@@ -1,6 +1,6 @@
 import Post from '../models/Post.js';
 import User from '../models/User.js';
-import fs from 'fs';
+import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
 import { createNotification } from '../utils/createNotification.js';
 
 // @desc    Create a new post
@@ -13,8 +13,9 @@ export const createPost = async (req, res) => {
     let mediaType = 'none';
 
     if (req.file) {
-      media = `/uploads/${req.file.filename}`;
-      const extension = req.file.filename.split('.').pop().toLowerCase();
+      const { url } = await uploadFileToS3(req.file, 'posts');
+      media = url;
+      const extension = req.file.originalname.split('.').pop().toLowerCase();
       if (['mp4', 'mov', 'avi'].includes(extension)) {
         mediaType = 'video';
       } else {
@@ -173,12 +174,9 @@ export const deletePost = async (req, res) => {
       return res.status(401).json({ message: 'Action not authorized' });
     }
 
-    // Delete media file locally if it exists
+    // Delete media file from S3 if it exists
     if (post.media) {
-      const filePath = `./public${post.media}`;
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      await deleteFileFromS3(post.media);
     }
 
     await post.deleteOne();

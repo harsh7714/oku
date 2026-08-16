@@ -1,24 +1,36 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Send, Loader2, MessageCircle } from 'lucide-react';
+import { Search, Send, Loader2, MessageCircle, Image, X, Trash2 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import Skeleton from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
+import ImageLightbox from '../components/ImageLightbox';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './MessagesPage.css';
 
 const avatarSrc = (u) =>
   u?.profilePicture
-    ? `http://localhost:5000${u.profilePicture}`
+    ? getMediaUrl(u.profilePicture)
     : `https://api.dicebear.com/7.x/bottts/svg?seed=${u?.username}`;
 
 const roomFor = (idA, idB) => [idA, idB].sort().join('_');
 
+const lastMessagePreview = (lastMessage) => {
+  if (lastMessage.content) return lastMessage.content;
+  if (lastMessage.mediaType === 'video') return '🎥 Video';
+  if (lastMessage.mediaType === 'image') return '📷 Photo';
+  return '';
+};
+
 const MessagesPage = ({ onOpen }) => {
   const { user } = useAuth();
   const { socket, onlineUsers } = useSocket();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
 
   const [conversations, setConversations] = useState([]);
@@ -29,6 +41,12 @@ const MessagesPage = ({ onOpen }) => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
+  const [mediaFile, setMediaFile] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState('');
+  const [mediaType, setMediaType] = useState('none');
+  const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -51,6 +69,7 @@ const MessagesPage = ({ onOpen }) => {
       setConversations(data);
     } catch (err) {
       console.error('Error fetching conversations:', err);
+      toast.error('Failed to load conversations');
     } finally {
       setLoadingConversations(false);
     }
@@ -83,6 +102,7 @@ const MessagesPage = ({ onOpen }) => {
       );
     } catch (err) {
       console.error('Error fetching chat history:', err);
+      toast.error('Failed to load conversation');
     } finally {
       setLoadingMessages(false);
     }
@@ -103,7 +123,10 @@ const MessagesPage = ({ onOpen }) => {
       api
         .get(`/users/profile/${targetUsername}`)
         .then(({ data }) => openConversation(data))
-        .catch((err) => console.error('Error opening direct conversation:', err));
+        .catch((err) => {
+          console.error('Error opening direct conversation:', err);
+          toast.error('Could not open that conversation');
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, loadingConversations]);
@@ -157,16 +180,53 @@ const MessagesPage = ({ onOpen }) => {
       }
     };
 
+    const handleDeleted = ({ messageId }) => {
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    };
+
+    const handleConversationDeleted = ({ partnerId }) => {
+      setConversations((prev) => prev.filter((c) => c.user._id !== partnerId));
+      if (activePartnerRef.current?._id === partnerId) {
+        setMessages([]);
+        setActivePartner(null);
+      }
+    };
+
     socket.on('receiveMessage', handleReceive);
     socket.on('typing', handleTyping);
     socket.on('stopTyping', handleStopTyping);
+    socket.on('messageDeleted', handleDeleted);
+    socket.on('conversationDeleted', handleConversationDeleted);
 
     return () => {
       socket.off('receiveMessage', handleReceive);
       socket.off('typing', handleTyping);
       socket.off('stopTyping', handleStopTyping);
+      socket.off('messageDeleted', handleDeleted);
+      socket.off('conversationDeleted', handleConversationDeleted);
     };
   }, [socket, user]);
+
+  const handleMediaChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setMediaFile(file);
+    setMediaType(file.type.split('/')[0] === 'video' ? 'video' : 'image');
+
+    const reader = new FileReader();
+    reader.onloadend = () => setMediaPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const removeMedia = () => {
+    setMediaFile(null);
+    setMediaPreview('');
+    setMediaType('none');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleDraftChange = (e) => {
     setDraft(e.target.value);
@@ -183,21 +243,29 @@ const MessagesPage = ({ onOpen }) => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!draft.trim() || !activePartner || sending) return;
+    if ((!draft.trim() && !mediaFile) || !activePartner || sending) return;
 
     setSending(true);
     const content = draft.trim();
+    const attachedMedia = mediaFile;
     setDraft('');
+    removeMedia();
 
     if (socket) {
       socket.emit('stopTyping', roomFor(user._id, activePartner._id));
     }
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
+    const formData = new FormData();
+    formData.append('receiverId', activePartner._id);
+    formData.append('content', content);
+    if (attachedMedia) {
+      formData.append('media', attachedMedia);
+    }
+
     try {
-      const { data } = await api.post('/messages', {
-        receiverId: activePartner._id,
-        content,
+      const { data } = await api.post('/messages', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       setMessages((prev) => [...prev, data]);
       setConversations((prev) => {
@@ -206,6 +274,7 @@ const MessagesPage = ({ onOpen }) => {
           user: activePartner,
           lastMessage: {
             content: data.content,
+            mediaType: data.mediaType,
             createdAt: data.createdAt,
             senderId: user._id,
             isRead: true,
@@ -218,8 +287,38 @@ const MessagesPage = ({ onOpen }) => {
       });
     } catch (err) {
       console.error('Error sending message:', err);
+      toast.error('Failed to send message');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      await api.delete(`/messages/${messageId}`);
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    } catch (err) {
+      console.error('Error deleting message:', err);
+      toast.error('Failed to delete message');
+    }
+  };
+
+  const handleDeleteConversation = () => {
+    if (!activePartner) return;
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteConversation = async () => {
+    setShowDeleteConfirm(false);
+    try {
+      await api.delete(`/messages/conversation/${activePartner._id}`);
+      setConversations((prev) => prev.filter((c) => c.user._id !== activePartner._id));
+      setMessages([]);
+      setActivePartner(null);
+      toast.success('Conversation deleted');
+    } catch (err) {
+      console.error('Error deleting conversation:', err);
+      toast.error('Failed to delete conversation');
     }
   };
 
@@ -232,6 +331,7 @@ const MessagesPage = ({ onOpen }) => {
         setSearchResults(data.filter((u) => u._id !== user._id));
       } catch (err) {
         console.error('User search error:', err);
+        toast.error('Search failed, try again');
       }
     } else {
       setSearchResults([]);
@@ -315,7 +415,7 @@ const MessagesPage = ({ onOpen }) => {
                         <span className="conversation-username">@{c.user.username}</span>
                         <span className="conversation-time">{formatConversationTime(c.lastMessage.createdAt)}</span>
                       </div>
-                      <p className="conversation-last-message">{c.lastMessage.content}</p>
+                      <p className="conversation-last-message">{lastMessagePreview(c.lastMessage)}</p>
                     </div>
                     {unread && <span className="unread-dot" />}
                   </div>
@@ -349,6 +449,14 @@ const MessagesPage = ({ onOpen }) => {
                     {isPartnerOnline ? 'Online' : `Last seen ${formatRelativeTime(activePartner.lastSeen)}`}
                   </span>
                 </div>
+                <button
+                  type="button"
+                  className="btn-delete-conversation"
+                  onClick={handleDeleteConversation}
+                  title="Delete conversation"
+                >
+                  <Trash2 size={17} />
+                </button>
               </div>
 
               <div className="chat-messages">
@@ -366,8 +474,31 @@ const MessagesPage = ({ onOpen }) => {
                     return (
                       <div key={m._id} className={`chat-bubble-row ${isMine ? 'mine' : ''}`}>
                         <div className="chat-bubble">
-                          <p>{m.content}</p>
-                          <span className="chat-bubble-time">{formatTime(m.createdAt)}</span>
+                          {m.media && m.mediaType === 'image' && (
+                            <img
+                              src={getMediaUrl(m.media)}
+                              alt="Attachment"
+                              className="chat-bubble-media"
+                              onClick={() => setLightboxSrc(getMediaUrl(m.media))}
+                            />
+                          )}
+                          {m.media && m.mediaType === 'video' && (
+                            <video src={getMediaUrl(m.media)} controls className="chat-bubble-media" />
+                          )}
+                          {m.content && <p>{m.content}</p>}
+                          <div className="chat-bubble-footer">
+                            {isMine && (
+                              <button
+                                type="button"
+                                className="btn-delete-message"
+                                onClick={() => handleDeleteMessage(m._id)}
+                                title="Delete message"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                            <span className="chat-bubble-time">{formatTime(m.createdAt)}</span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -385,7 +516,35 @@ const MessagesPage = ({ onOpen }) => {
                 <div ref={messagesEndRef} />
               </div>
 
+              {mediaPreview && (
+                <div className="chat-media-preview-container">
+                  <button type="button" className="btn-remove-media glass" onClick={removeMedia}>
+                    <X size={16} />
+                  </button>
+                  {mediaType === 'image' ? (
+                    <img src={mediaPreview} alt="Preview" className="chat-media-preview" />
+                  ) : (
+                    <video src={mediaPreview} controls className="chat-media-preview" />
+                  )}
+                </div>
+              )}
+
               <form className="chat-input-row" onSubmit={handleSend}>
+                <button
+                  type="button"
+                  className="chat-attach-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Add Image or Video"
+                >
+                  <Image size={18} />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleMediaChange}
+                  accept="image/*,video/*"
+                  style={{ display: 'none' }}
+                />
                 <input
                   type="text"
                   placeholder="Type a message..."
@@ -393,7 +552,11 @@ const MessagesPage = ({ onOpen }) => {
                   onChange={handleDraftChange}
                   className="form-input chat-input"
                 />
-                <button type="submit" className="btn btn-primary btn-send-message" disabled={!draft.trim() || sending}>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-send-message"
+                  disabled={(!draft.trim() && !mediaFile) || sending}
+                >
                   <Send size={16} />
                 </button>
               </form>
@@ -401,6 +564,21 @@ const MessagesPage = ({ onOpen }) => {
           )}
         </section>
       </div>
+
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} alt="Chat attachment enlarged" onClose={() => setLightboxSrc(null)} />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Delete conversation?"
+          message={`Delete your entire conversation with @${activePartner?.username}? This cannot be undone.`}
+          confirmLabel="Delete"
+          danger
+          onConfirm={confirmDeleteConversation}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </main>
   );
 };

@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import PostCard from '../components/PostCard';
 import FollowListModal from '../components/FollowListModal';
 import ImageLightbox from '../components/ImageLightbox';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
 import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText } from 'lucide-react';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   const { user: currentUser, setUser: setCurrentUser } = useAuth();
+  const toast = useToast();
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +46,7 @@ const ProfilePage = () => {
       setPosts(postsRes.data);
     } catch (err) {
       console.error('Error fetching profile data:', err);
+      toast.error('Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -93,6 +97,7 @@ const ProfilePage = () => {
       }
     } catch (err) {
       console.error('Follow toggle error:', err);
+      toast.error(err.response?.data?.message || 'Failed to update follow status');
     }
   };
 
@@ -144,8 +149,10 @@ const ProfilePage = () => {
       setProfilePicPreview('');
       setCoverPicFile(null);
       setCoverPicPreview('');
+      toast.success('Profile updated');
     } catch (err) {
       console.error('Save profile error:', err);
+      toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -155,8 +162,10 @@ const ProfilePage = () => {
     try {
       await api.delete(`/posts/${postId}`);
       setPosts((prev) => prev.filter((p) => p._id !== postId));
+      toast.success('Post deleted');
     } catch (err) {
       console.error('Error deleting user post:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete post');
     }
   };
 
@@ -184,7 +193,7 @@ const ProfilePage = () => {
         {/* Cover Photo */}
         <div className="profile-cover-section">
           {profileUser.coverPicture ? (
-            <img src={`http://localhost:5000${profileUser.coverPicture}`} alt="Cover" className="cover-img" />
+            <img src={getMediaUrl(profileUser.coverPicture)} alt="Cover" className="cover-img" />
           ) : (
             <div className="cover-placeholder" />
           )}
@@ -194,7 +203,7 @@ const ProfilePage = () => {
         <div className="profile-meta-details">
           <div className="profile-avatar-row">
             <img
-              src={profileUser.profilePicture ? `http://localhost:5000${profileUser.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profileUser.username}
+              src={profileUser.profilePicture ? getMediaUrl(profileUser.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profileUser.username}
               alt="Avatar"
               className="profile-avatar avatar"
               width="100"
@@ -288,14 +297,14 @@ const ProfilePage = () => {
               className="profile-grid-tile"
               onClick={() => {
                 if (post.mediaType === 'image') {
-                  setGridLightboxSrc(`http://localhost:5000${post.media}`);
+                  setGridLightboxSrc(getMediaUrl(post.media));
                 } else {
                   setViewMode('list');
                 }
               }}
             >
               {post.mediaType === 'image' ? (
-                <img src={`http://localhost:5000${post.media}`} alt="Post thumbnail" className="profile-grid-img" />
+                <img src={getMediaUrl(post.media)} alt="Post thumbnail" className="profile-grid-img" />
               ) : post.mediaType === 'video' ? (
                 <div className="profile-grid-placeholder profile-grid-video">
                   <Film size={26} />
@@ -332,7 +341,7 @@ const ProfilePage = () => {
                 {coverPicPreview ? (
                   <img src={coverPicPreview} alt="Cover Preview" className="cover-img-preview" />
                 ) : profileUser.coverPicture ? (
-                  <img src={`http://localhost:5000${profileUser.coverPicture}`} alt="Cover" className="cover-img-preview" />
+                  <img src={getMediaUrl(profileUser.coverPicture)} alt="Cover" className="cover-img-preview" />
                 ) : (
                   <div className="cover-preview-placeholder" />
                 )}
@@ -347,7 +356,7 @@ const ProfilePage = () => {
               <div className="edit-avatar-section">
                 <div className="avatar-preview-wrapper">
                   <img
-                    src={profilePicPreview ? profilePicPreview : profileUser.profilePicture ? `http://localhost:5000${profileUser.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profileUser.username}
+                    src={profilePicPreview ? profilePicPreview : profileUser.profilePicture ? getMediaUrl(profileUser.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profileUser.username}
                     alt="Avatar Preview"
                     className="avatar avatar-img-preview"
                     width="80"

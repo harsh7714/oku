@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import './AuthPage.css';
 
@@ -10,13 +11,12 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
   const { login, register } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
 
   const handleToggle = () => {
     setIsLogin(!isLogin);
-    setErrorMsg('');
     setUsername('');
     setEmail('');
     setPassword('');
@@ -24,30 +24,25 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
 
     if (isLogin) {
       if (!email || !password) {
-        return setErrorMsg('Please fill in all fields');
+        return toast.warning('Please fill in all fields');
       }
       const res = await login(email, password);
       if (res.success) {
         navigate('/');
-      } else {
-        setErrorMsg(res.message);
       }
     } else {
       if (!username || !email || !password) {
-        return setErrorMsg('Please fill in all fields');
+        return toast.warning('Please fill in all fields');
       }
       if (password.length < 6) {
-        return setErrorMsg('Password must be at least 6 characters');
+        return toast.warning('Password must be at least 6 characters');
       }
       const res = await register(username, email, password);
       if (res.success) {
         navigate('/');
-      } else {
-        setErrorMsg(res.message);
       }
     }
   };
@@ -56,6 +51,7 @@ const AuthPage = () => {
     <div className="auth-container-fullscreen">
       <div className="auth-card glass glass-glow fade-in">
         <div className="auth-header-logo">
+          <img src="/favicon.svg" alt="Oku" className="auth-logo-icon" width="48" height="48" />
           <h1 className="auth-logo">Oku</h1>
           <p className="auth-tagline">Connect. Express. Belong.</p>
         </div>
@@ -74,8 +70,6 @@ const AuthPage = () => {
             Sign Up
           </button>
         </div>
-
-        {errorMsg && <div className="error-alert fade-in">{errorMsg}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (

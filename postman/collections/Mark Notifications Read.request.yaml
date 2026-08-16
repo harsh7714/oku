@@ -1,0 +1,14 @@
+$kind: http-request
+name: Mark Notifications Read
+description: |
+  Mark all of the current user's notifications as read.
+
+  200  Notifications marked as read
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/notifications/read
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000220000

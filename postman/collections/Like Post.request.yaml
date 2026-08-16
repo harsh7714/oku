@@ -1,0 +1,15 @@
+$kind: http-request
+name: Like Post
+description: |
+  Toggle a like on a post (likes if not liked, unlikes if already liked).
+
+  200  { liked: boolean, likesCount: number }
+  401  Not authorized, no token provided
+  404  Post not found
+url: http://localhost:5000/api/posts/66f1a2b3c4d5e6f7a8b9c0d1/like
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000120000

@@ -1,0 +1,19 @@
+$kind: http-request
+name: Update Profile
+description: |
+  Update the current user's bio, profile picture, and/or cover picture.
+
+  This endpoint expects multipart/form-data. In Postman, set Body to
+  "form-data" and add: bio (text), profilePicture (file, optional),
+  coverPicture (file, optional).
+
+  200  Updated user object
+  401  Not authorized, no token provided
+  500  Server error
+url: http://localhost:5000/api/users/profile
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000040000

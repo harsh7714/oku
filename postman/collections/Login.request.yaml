@@ -1,0 +1,23 @@
+$kind: http-request
+name: Login
+description: |
+  Code  Meaning
+  200  Login successful
+  400  {"message": "Please provide credentials"} — missing field
+  401  {"message": "Invalid credentials"} — wrong username/email or password
+  429  {"message": "Too many attempts, please try again later"}
+  500  Server error
+url: http://localhost:5000/api/auth/login
+method: POST
+body:
+  type: json
+  content: |
+    {
+        "emailOrUsername": "sarah_dev",
+        "password": "SecurePass123"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 279502267060979

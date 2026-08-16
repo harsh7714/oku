@@ -1,0 +1,15 @@
+$kind: http-request
+name: Get User Profile
+description: |
+  Fetch a public profile by username.
+
+  200  User profile object
+  404  User not found
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/users/profile/sarah_dev
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000020000

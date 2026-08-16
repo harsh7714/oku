@@ -1,0 +1,19 @@
+$kind: http-request
+name: Send Message
+description: |
+  Send a direct message with text and/or a media attachment.
+
+  This endpoint expects multipart/form-data. In Postman, set Body to
+  "form-data" and add: receiverId (text, required), content (text,
+  optional), media (file, optional).
+
+  201  Created message object
+  400  receiverId is required / content exceeds 2000 characters
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/messages
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000170000

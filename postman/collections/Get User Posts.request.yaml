@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get User Posts
+description: |
+  All posts authored by a given username.
+
+  200  Array of posts
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/posts/user/sarah_dev
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000090000

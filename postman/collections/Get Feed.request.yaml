@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Feed
+description: |
+  Paginated feed of posts from users the current user follows.
+
+  200  { posts: [...], hasMore: boolean }
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/posts/feed?page=1&limit=10
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000070000

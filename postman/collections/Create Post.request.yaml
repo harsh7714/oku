@@ -1,0 +1,19 @@
+$kind: http-request
+name: Create Post
+description: |
+  Create a post with text and/or a media attachment.
+
+  This endpoint expects multipart/form-data. In Postman, set Body to
+  "form-data" and add: content (text, optional), media (file, optional
+  - image or video, max 25MB).
+
+  201  Created post object
+  400  Content exceeds 2000 characters
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/posts
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000100000

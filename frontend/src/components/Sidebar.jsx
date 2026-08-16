@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Compass, MessageCircle, Bell, User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './Sidebar.css';
 
 const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
@@ -18,6 +19,7 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
   return (
     <aside className="sidebar glass">
       <div className="logo-section">
+        <img src="/favicon.svg" alt="" className="logo-icon" width="32" height="32" />
         <h1 className="logo-text">Oku</h1>
       </div>
 
@@ -77,7 +79,7 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
 
       <div className="user-profile-summary">
         <img 
-          src={user.profilePicture ? `http://localhost:5000${user.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.username} 
+          src={user.profilePicture ? getMediaUrl(user.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.username}
           alt="Avatar" 
           className="avatar" 
           width="40" 

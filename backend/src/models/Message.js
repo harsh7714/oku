@@ -14,9 +14,18 @@ const messageSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: [true, 'Message content is required'],
       trim: true,
       maxlength: [2000, 'Message cannot exceed 2000 characters'],
+      default: '',
+    },
+    media: {
+      type: String,
+      default: '',
+    },
+    mediaType: {
+      type: String,
+      enum: ['image', 'video', 'none'],
+      default: 'none',
     },
     isRead: {
       type: Boolean,

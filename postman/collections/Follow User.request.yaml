@@ -1,0 +1,15 @@
+$kind: http-request
+name: Follow User
+description: |
+  Follow a user by their _id.
+
+  200  Follow successful
+  401  Not authorized, no token provided
+  404  User not found
+url: http://localhost:5000/api/users/66f1a2b3c4d5e6f7a8b9c0d1/follow
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000050000

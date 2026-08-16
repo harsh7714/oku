@@ -1,0 +1,16 @@
+$kind: http-request
+name: Delete Post
+description: |
+  Delete a post (owner only).
+
+  200  Post deleted
+  401  Not authorized, no token provided
+  403  Not the post owner
+  404  Post not found
+url: http://localhost:5000/api/posts/66f1a2b3c4d5e6f7a8b9c0d1
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000110000

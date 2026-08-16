@@ -1,0 +1,15 @@
+$kind: http-request
+name: Delete Message
+description: |
+  Delete a single message.
+
+  200  Message deleted
+  401  Not authorized, no token provided
+  404  Message not found
+url: http://localhost:5000/api/messages/66f1a2b3c4d5e6f7a8b9c0d1
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000190000

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, UserPlus, Check } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { getMediaUrl } from '../utils/mediaUrl';
 import './RightSidebar.css';
 
 const RightSidebar = () => {
@@ -10,6 +12,7 @@ const RightSidebar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const { user, setUser } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +39,7 @@ const RightSidebar = () => {
         setSearchResults(data);
       } catch (err) {
         console.error('Search error:', err);
+        toast.error('Search failed, try again');
       }
     } else {
       setSearchResults([]);
@@ -56,6 +60,7 @@ const RightSidebar = () => {
       localStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (err) {
       console.error('Follow error:', err);
+      toast.error(err.response?.data?.message || 'Failed to follow user');
     }
   };
 
@@ -88,7 +93,7 @@ const RightSidebar = () => {
                 onClick={() => selectUser(res.username)}
               >
                 <img 
-                  src={res.profilePicture ? `http://localhost:5000${res.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + res.username} 
+                  src={res.profilePicture ? getMediaUrl(res.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + res.username}
                   alt="Avatar" 
                   className="avatar" 
                   width="32" 
@@ -118,7 +123,7 @@ const RightSidebar = () => {
                   onClick={() => navigate(`/profile/${suggestedUser.username}`)}
                 >
                   <img
-                    src={suggestedUser.profilePicture ? `http://localhost:5000${suggestedUser.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + suggestedUser.username}
+                    src={suggestedUser.profilePicture ? getMediaUrl(suggestedUser.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + suggestedUser.username}
                     alt="Avatar"
                     className="avatar"
                     width="36"

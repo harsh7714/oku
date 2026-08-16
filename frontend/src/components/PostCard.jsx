@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
+import { getMediaUrl } from '../utils/mediaUrl';
 import ImageLightbox from './ImageLightbox';
 import './PostCard.css';
 
@@ -35,6 +37,7 @@ const renderPostContent = (content, navigate) => {
 const PostCard = ({ post, onDelete }) => {
   const { user } = useAuth();
   const { onlineUsers } = useSocket();
+  const toast = useToast();
   const navigate = useNavigate();
   const [liked, setLiked] = useState(post.likes.includes(user?._id));
   const [likesCount, setLikesCount] = useState(post.likes.length);
@@ -58,6 +61,7 @@ const PostCard = ({ post, onDelete }) => {
       }
     } catch (err) {
       console.error('Error liking post:', err);
+      toast.error('Failed to update like');
     }
   };
 
@@ -90,6 +94,7 @@ const PostCard = ({ post, onDelete }) => {
       setComments(data);
     } catch (err) {
       console.error('Error fetching comments:', err);
+      toast.error('Failed to load comments');
     }
   };
 
@@ -111,6 +116,7 @@ const PostCard = ({ post, onDelete }) => {
       setCommentsCount((prev) => prev + 1);
     } catch (err) {
       console.error('Error adding comment:', err);
+      toast.error('Failed to post comment');
     }
   };
 
@@ -121,6 +127,7 @@ const PostCard = ({ post, onDelete }) => {
       setCommentsCount((prev) => prev - 1);
     } catch (err) {
       console.error('Error deleting comment:', err);
+      toast.error('Failed to delete comment');
     }
   };
 
@@ -132,7 +139,7 @@ const PostCard = ({ post, onDelete }) => {
       <div className="post-header">
         <div className="conversation-avatar-wrap" onClick={() => navigate(`/profile/${post.userId.username}`)}>
           <img
-            src={post.userId.profilePicture ? `http://localhost:5000${post.userId.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username}
+            src={post.userId.profilePicture ? getMediaUrl(post.userId.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username}
             alt="Avatar"
             className="avatar post-avatar"
             width="40"
@@ -156,7 +163,7 @@ const PostCard = ({ post, onDelete }) => {
         {post.media && post.mediaType === 'image' && (
           <div className="post-media-wrap">
             <img
-              src={`http://localhost:5000${post.media}`}
+              src={getMediaUrl(post.media)}
               alt="Post Attachment"
               className="post-media-img"
               onClick={handleMediaClick}
@@ -165,7 +172,7 @@ const PostCard = ({ post, onDelete }) => {
           </div>
         )}
         {post.media && post.mediaType === 'video' && (
-          <video src={`http://localhost:5000${post.media}`} controls className="post-media-video" />
+          <video src={getMediaUrl(post.media)} controls className="post-media-video" />
         )}
       </div>
 
@@ -182,7 +189,7 @@ const PostCard = ({ post, onDelete }) => {
 
       {lightboxOpen && post.media && (
         <ImageLightbox
-          src={`http://localhost:5000${post.media}`}
+          src={getMediaUrl(post.media)}
           alt="Post attachment enlarged"
           onClose={() => setLightboxOpen(false)}
         />
@@ -210,7 +217,7 @@ const PostCard = ({ post, onDelete }) => {
               comments.map((comment) => (
                 <div key={comment._id} className="comment-item">
                   <img
-                    src={comment.userId.profilePicture ? `http://localhost:5000${comment.userId.profilePicture}` : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + comment.userId.username}
+                    src={comment.userId.profilePicture ? getMediaUrl(comment.userId.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + comment.userId.username}
                     alt="Avatar"
                     className="avatar comment-avatar"
                     onClick={() => navigate(`/profile/${comment.userId.username}`)}

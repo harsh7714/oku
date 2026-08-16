@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Messages
+description: |
+  Fetch the full message history with a given user.
+
+  200  Array of messages
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/messages/66f1a2b3c4d5e6f7a8b9c0d1
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000180000

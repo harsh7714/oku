@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
 import { createNotification } from '../utils/createNotification.js';
 
 // @desc    Get user profile by username
@@ -66,11 +67,16 @@ export const updateUserProfile = async (req, res) => {
     // Check if file uploads exist (handled by multer in routes)
     if (req.files) {
       if (req.files.profilePicture) {
-        // Store path relative to server root
-        user.profilePicture = `/uploads/${req.files.profilePicture[0].filename}`;
+        const oldProfilePicture = user.profilePicture;
+        const { url } = await uploadFileToS3(req.files.profilePicture[0], 'avatars');
+        user.profilePicture = url;
+        await deleteFileFromS3(oldProfilePicture);
       }
       if (req.files.coverPicture) {
-        user.coverPicture = `/uploads/${req.files.coverPicture[0].filename}`;
+        const oldCoverPicture = user.coverPicture;
+        const { url } = await uploadFileToS3(req.files.coverPicture[0], 'covers');
+        user.coverPicture = url;
+        await deleteFileFromS3(oldCoverPicture);
       }
     }
 

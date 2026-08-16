@@ -1,0 +1,14 @@
+$kind: http-request
+name: Search Users
+description: |
+  Search users by username (partial match).
+
+  200  Array of matching users
+  401  Not authorized, no token provided
+url: http://localhost:5000/api/users/search?q=sarah
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 4000000000000
