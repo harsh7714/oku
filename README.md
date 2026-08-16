@@ -87,7 +87,20 @@ npm install
 npm run dev
 ```
 
-The app runs on `http://localhost:5173`.
+The app runs on `http://localhost:5173`. It reads the backend's base URL from `VITE_API_URL`
+(set in `frontend/.env`); if unset, it falls back to `http://localhost:5000` for local dev.
+
+## Deploying the frontend to Netlify
+
+The repo root has a `netlify.toml` that points Netlify at the `frontend/` folder, builds it with
+`npm run build`, and rewrites all routes to `index.html` (required for React Router's client-side
+routing on refresh/deep links).
+
+1. Connect the repo to Netlify — it will pick up `netlify.toml` automatically.
+2. In Site settings → Environment variables, set `VITE_API_URL` to your deployed backend's URL
+   (e.g. `https://your-backend-host.example.com`, no trailing slash, no `/api` suffix).
+3. Deploy. The backend must be reachable from the public internet (its CORS is already open via
+   `origin: '*'`) — a local `http://localhost:5000` backend will not work from a Netlify-hosted site.
 
 ## Scripts
 
