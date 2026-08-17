@@ -24,9 +24,21 @@
   color: var(--text-main);
 }
 
-.btn-mark-read {
+.notifications-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-mark-read,
+.btn-toggle-push {
   padding: 8px 14px;
   font-size: 0.82rem;
+}
+
+.btn-toggle-push:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .notifications-loading {
@@ -113,7 +125,19 @@
 }
 
 @media (max-width: 600px) {
-  .notifications-header {
+  /* The mobile top navbar already shows the "Oku" wordmark, so the
+     redundant title is dropped here — but the header itself stays, as the
+     only place to reach the push-notification toggle. */
+  .notifications-title {
     display: none;
+  }
+  .notifications-header {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .notifications-header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }

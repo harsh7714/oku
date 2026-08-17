@@ -1,13 +1,32 @@
 import Message from '../models/Message.js';
+import Post from '../models/Post.js';
 import User from '../models/User.js';
 import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
+import { sendPushToUser } from '../utils/webpush.js';
+
+// Shared populate shape for a message doc: sender/receiver profile bits,
+// plus a lightweight preview of whatever it replies to or shares.
+const MESSAGE_POPULATE = [
+  { path: 'senderId', select: 'username profilePicture lastSeen' },
+  { path: 'receiverId', select: 'username profilePicture lastSeen' },
+  {
+    path: 'replyTo',
+    select: 'content media mediaType senderId',
+    populate: { path: 'senderId', select: 'username' },
+  },
+  {
+    path: 'sharedPost',
+    select: 'content media mediaType userId',
+    populate: { path: 'userId', select: 'username profilePicture' },
+  },
+];
 
 // @desc    Send a message
 // @route   POST /api/messages
 // @access  Private
 export const sendMessage = async (req, res) => {
   try {
-    const { receiverId, content } = req.body;
+    const { receiverId, content, replyTo, sharedPostId } = req.body;
 
     if (!receiverId) {
       return res.status(400).json({ message: 'Receiver is required' });
@@ -23,8 +42,23 @@ export const sendMessage = async (req, res) => {
       mediaType = ['mp4', 'mov', 'avi'].includes(extension) ? 'video' : 'image';
     }
 
-    if (!content && !media) {
-      return res.status(400).json({ message: 'Message must have content or media' });
+    if (!content && !media && !sharedPostId) {
+      return res.status(400).json({ message: 'Message must have content, media, or a shared post' });
+    }
+
+    let sharedPost = null;
+    if (sharedPostId) {
+      const post = await Post.findById(sharedPostId);
+      if (!post) {
+        return res.status(404).json({ message: 'Shared post not found' });
+      }
+      sharedPost = post._id;
+    }
+
+    let replyToId = null;
+    if (replyTo) {
+      const original = await Message.findById(replyTo);
+      if (original) replyToId = original._id;
     }
 
     const message = await Message.create({
@@ -33,11 +67,11 @@ export const sendMessage = async (req, res) => {
       content,
       media,
       mediaType,
+      replyTo: replyToId,
+      sharedPost,
     });
 
-    const populatedMessage = await Message.findById(message._id)
-      .populate('senderId', 'username profilePicture lastSeen')
-      .populate('receiverId', 'username profilePicture lastSeen');
+    const populatedMessage = await Message.findById(message._id).populate(MESSAGE_POPULATE);
 
     // Notify real-time socket server (if set up)
     if (global.io) {
@@ -47,10 +81,87 @@ export const sendMessage = async (req, res) => {
       }
     }
 
+    // Best-effort browser/OS push, so the recipient is notified even when
+    // they have no live socket connection (app closed/backgrounded). Kept
+    // separate from the Notification/bell system rather than routed
+    // through createNotification, so DMs don't clutter the activity feed —
+    // messages already have their own unread badge in the sidebar. Not
+    // awaited — push-service round trips can take a second or more, and
+    // sending a message shouldn't wait on that.
+    if (receiverId !== req.user._id.toString()) {
+      sendPushToUser(receiverId, {
+        title: 'Oku',
+        body: sharedPost
+          ? `${req.user.username} shared a post with you`
+          : media
+            ? `${req.user.username} sent you ${mediaType === 'image' ? 'a photo' : 'a video'}`
+            : `${req.user.username} sent you a message`,
+        icon: '/favicon.svg',
+        url: `/messages?user=${req.user.username}`,
+      }).catch((err) => console.error('Push send error:', err.message));
+    }
+
     res.status(201).json(populatedMessage);
   } catch (error) {
     console.error('sendMessage Error:', error);
     res.status(500).json({ message: 'Server error sending message' });
+  }
+};
+
+// @desc    Add, change, or remove your reaction on a message. Sending the
+//          same emoji you already reacted with removes it; a different
+//          emoji replaces it — one reaction per user per message.
+// @route   PUT /api/messages/:id/react
+// @access  Private
+export const reactToMessage = async (req, res) => {
+  try {
+    const { emoji } = req.body;
+    if (!emoji) {
+      return res.status(400).json({ message: 'Emoji is required' });
+    }
+
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    const userId = req.user._id.toString();
+    const isParticipant =
+      message.senderId.toString() === userId || message.receiverId.toString() === userId;
+    if (!isParticipant) {
+      return res.status(401).json({ message: 'Action not authorized' });
+    }
+
+    const existingIndex = message.reactions.findIndex((r) => r.userId.toString() === userId);
+    if (existingIndex !== -1 && message.reactions[existingIndex].emoji === emoji) {
+      message.reactions.splice(existingIndex, 1);
+    } else if (existingIndex !== -1) {
+      message.reactions[existingIndex].emoji = emoji;
+    } else {
+      message.reactions.push({ userId: req.user._id, emoji });
+    }
+
+    await message.save();
+
+    const partnerId =
+      message.senderId.toString() === userId
+        ? message.receiverId.toString()
+        : message.senderId.toString();
+
+    if (global.io) {
+      const partnerSocketId = global.onlineUsers?.get(partnerId);
+      if (partnerSocketId) {
+        global.io.to(partnerSocketId).emit('messageReaction', {
+          messageId: message._id,
+          reactions: message.reactions,
+        });
+      }
+    }
+
+    res.json({ messageId: message._id, reactions: message.reactions });
+  } catch (error) {
+    console.error('reactToMessage Error:', error);
+    res.status(500).json({ message: 'Server error updating reaction' });
   }
 };
 
@@ -127,8 +238,7 @@ export const getMessages = async (req, res) => {
       deletedFor: { $ne: currentUserId },
     })
       .sort({ createdAt: 1 })
-      .populate('senderId', 'username profilePicture lastSeen')
-      .populate('receiverId', 'username profilePicture lastSeen');
+      .populate(MESSAGE_POPULATE);
 
     // Mark partner's messages as read
     await Message.updateMany(
@@ -176,6 +286,7 @@ export const getConversations = async (req, res) => {
           lastMessage: {
             content: msg.content,
             mediaType: msg.mediaType,
+            sharedPost: !!msg.sharedPost,
             createdAt: msg.createdAt,
             senderId: msg.senderId._id,
             isRead: msg.isRead,

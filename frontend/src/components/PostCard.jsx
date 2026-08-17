@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { Heart, MessageSquare, Trash2, Send } from 'lucide-react';
+import { Heart, MessageSquare, Send, Share2, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { renderPostContent } from '../utils/renderPostContent';
 import ImageLightbox from './ImageLightbox';
+import MentionInput from './MentionInput';
+import ShareToChatModal from './ShareToChatModal';
 import './PostCard.css';
 
 const PostCard = ({ post, onDelete }) => {
@@ -26,6 +28,7 @@ const PostCard = ({ post, onDelete }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [captionExpanded, setCaptionExpanded] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const mediaClickTimerRef = useRef(null);
 
   const handleLike = async () => {
@@ -117,7 +120,7 @@ const PostCard = ({ post, onDelete }) => {
       <div className="post-header">
         <div className="conversation-avatar-wrap" onClick={() => navigate(`/profile/${post.userId.username}`)}>
           <img
-            src={post.userId.profilePicture ? getMediaUrl(post.userId.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username}
+            src={getAvatarUrl(post.userId)}
             alt="Avatar"
             className="avatar post-avatar"
             width="40"
@@ -126,7 +129,7 @@ const PostCard = ({ post, onDelete }) => {
           {isAuthorOnline && <span className="presence-dot" />}
         </div>
         <div className="post-user-info" onClick={() => navigate(`/profile/${post.userId.username}`)}>
-          <span className="post-username">@{post.userId.username}</span>
+          <span className="post-username">{post.userId.username}</span>
           <span className="post-time">{formatRelativeTime(post.createdAt)}</span>
         </div>
         {isOwner && (
@@ -174,7 +177,12 @@ const PostCard = ({ post, onDelete }) => {
           <MessageSquare size={18} />
           <span>{commentsCount}</span>
         </button>
+        <button className="action-btn share-btn" onClick={() => setShowShareModal(true)} title="Share to chat">
+          <Share2 size={18} />
+        </button>
       </div>
+
+      {showShareModal && <ShareToChatModal postId={post._id} onClose={() => setShowShareModal(false)} />}
 
       {lightboxOpen && post.media && (
         <ImageLightbox
@@ -187,7 +195,8 @@ const PostCard = ({ post, onDelete }) => {
       {showComments && (
         <div className="comments-section">
           <form className="comment-form" onSubmit={handleAddComment}>
-            <input
+            <MentionInput
+              as="input"
               type="text"
               placeholder="Write a comment..."
               value={newComment}
@@ -206,7 +215,7 @@ const PostCard = ({ post, onDelete }) => {
               comments.map((comment) => (
                 <div key={comment._id} className="comment-item">
                   <img
-                    src={comment.userId.profilePicture ? getMediaUrl(comment.userId.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + comment.userId.username}
+                    src={getAvatarUrl(comment.userId)}
                     alt="Avatar"
                     className="avatar comment-avatar"
                     onClick={() => navigate(`/profile/${comment.userId.username}`)}
@@ -216,7 +225,7 @@ const PostCard = ({ post, onDelete }) => {
                   <div className="comment-bubble">
                     <div className="comment-header">
                       <span className="comment-username" onClick={() => navigate(`/profile/${comment.userId.username}`)}>
-                        @{comment.userId.username}
+                        {comment.userId.username}
                       </span>
                       <span className="comment-date">{formatRelativeTime(comment.createdAt)}</span>
                     </div>

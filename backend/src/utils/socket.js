@@ -35,6 +35,35 @@ const initSocket = (server) => {
     socket.on('typing', (room) => socket.in(room).emit('typing', room));
     socket.on('stopTyping', (room) => socket.in(room).emit('stopTyping', room));
 
+    // WebRTC voice/video call signaling — the server only ever relays SDP
+    // offers/answers and ICE candidates between the two participants' rooms
+    // (each user already has a room named after their own userId, joined on
+    // 'setup'); media itself flows peer-to-peer once connected.
+    socket.on('callUser', ({ to, offer, callType, caller }) => {
+      if (!to) return;
+      io.to(to).emit('incomingCall', { from: socket.userId, offer, callType, caller });
+    });
+
+    socket.on('answerCall', ({ to, answer }) => {
+      if (!to) return;
+      io.to(to).emit('callAnswered', { from: socket.userId, answer });
+    });
+
+    socket.on('iceCandidate', ({ to, candidate }) => {
+      if (!to) return;
+      io.to(to).emit('iceCandidate', { from: socket.userId, candidate });
+    });
+
+    socket.on('rejectCall', ({ to }) => {
+      if (!to) return;
+      io.to(to).emit('callRejected', { from: socket.userId });
+    });
+
+    socket.on('endCall', ({ to }) => {
+      if (!to) return;
+      io.to(to).emit('callEnded', { from: socket.userId });
+    });
+
     socket.on('sendMessage', (message) => {
       const chat = message.receiverId;
       if (!chat) return console.log('chat.receiverId not defined');

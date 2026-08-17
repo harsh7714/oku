@@ -268,27 +268,53 @@
 }
 
 .chat-bubble-row {
+  position: relative;
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  /* .chat-messages has no align-items of its own, so flex items default to
+     stretch — without this the row would span the full message-list width
+     even though its bubble doesn't, pushing the hover-reveal reply/react
+     icons (positioned relative to the row) way out past the bubble's actual
+     edge and off-screen instead of sitting right next to it. */
+  align-self: flex-start;
+  max-width: 75%;
 }
 
 .chat-bubble-row.mine {
-  justify-content: flex-end;
+  align-items: flex-end;
+  align-self: flex-end;
 }
 
 .chat-bubble {
-  max-width: 65%;
+  max-width: 100%;
   padding: 10px 14px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
   background: var(--bg-card-hover);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow: hidden;
 }
 
 .chat-bubble-row.mine .chat-bubble {
   background: var(--accent-gradient);
   color: var(--primary-ink);
+  border-radius: var(--radius-md) var(--radius-md) 4px var(--radius-md);
+}
+
+/* Media-only bubbles (no caption) shed their padding/background so the
+   image or video fills the bubble edge-to-edge instead of floating in a
+   colored inset — previously the "mine" gradient background showed through
+   as a stray colored border around the attachment. */
+.chat-bubble.media-only {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.chat-bubble-row.mine .chat-bubble.media-only {
+  background: transparent;
 }
 
 .chat-bubble p {
@@ -299,10 +325,16 @@
 
 .chat-bubble-media {
   max-width: 100%;
-  max-height: 260px;
+  max-height: 300px;
+  width: 100%;
   border-radius: var(--radius-sm);
-  object-fit: contain;
+  object-fit: cover;
   display: block;
+}
+
+.chat-bubble.media-only .chat-bubble-media {
+  border-radius: inherit;
+  max-height: 340px;
 }
 
 img.chat-bubble-media {
@@ -317,21 +349,14 @@ img.chat-bubble-media {
   align-self: flex-end;
 }
 
-.btn-delete-message {
-  background: transparent;
-  border: none;
-  color: inherit;
-  opacity: 0.75;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-  transition: var(--transition);
-}
-
-.btn-delete-message:hover {
-  opacity: 1;
-  color: var(--error);
+.chat-bubble.media-only .chat-bubble-footer {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
 }
 
 .chat-bubble-time {
@@ -341,6 +366,325 @@ img.chat-bubble-media {
 
 .chat-bubble-row.mine .chat-bubble-time {
   color: rgba(10, 10, 10, 0.6);
+}
+
+.chat-bubble.media-only .chat-bubble-time {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Reply quote block, shown at the top of a bubble that replies to another message */
+.chat-reply-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 10px;
+  margin-bottom: 2px;
+  border-left: 3px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius-sm);
+  max-width: 100%;
+}
+
+.chat-bubble-row.mine .chat-reply-quote {
+  border-left-color: rgba(5, 25, 20, 0.4);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.chat-reply-quote-author {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.chat-reply-quote-text {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Shared post card, rendered inside a bubble when a post/reel is shared */
+.chat-shared-post {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.chat-shared-post:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.chat-shared-post-media {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.chat-shared-post-info {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-shared-post-author {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.chat-shared-post-caption {
+  font-size: 0.78rem;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Shared reel: a plain video preview, no card border/background — just the
+   media plus a play affordance so it's clear it's tappable. */
+.chat-shared-reel-wrap {
+  position: relative;
+  cursor: pointer;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.chat-shared-reel-media {
+  display: block;
+}
+
+.chat-shared-reel-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Reactions rendered as pills below the bubble */
+.chat-reactions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: -6px;
+}
+
+.chat-reaction-pill {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.chat-reaction-pill:hover {
+  background: var(--bg-card-hover);
+}
+.chat-reaction-pill.mine {
+  border-color: var(--primary);
+  background: rgba(46, 230, 166, 0.12);
+}
+
+.chat-reaction-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* "More" button — the reply/react/delete entry point. Permanently visible
+   on desktop; hidden on mobile, where the same menu opens via a long-press
+   on the bubble instead (touch devices have no reliable hover state to
+   reveal it on). */
+.chat-more-btn {
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--bg-card-hover);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.chat-more-btn:hover {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.chat-bubble-row:not(.mine) .chat-more-btn {
+  left: calc(100% + 4px);
+}
+.chat-bubble-row.mine .chat-more-btn {
+  right: calc(100% + 4px);
+}
+
+@media (max-width: 600px) {
+  .chat-more-btn {
+    display: none;
+  }
+}
+
+/* Combined reply/react/delete menu, opened by the "more" button on desktop
+   or a long-press on the bubble on mobile. */
+.chat-action-menu {
+  position: absolute;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  min-width: 160px;
+}
+
+.chat-bubble-row:not(.mine) .chat-action-menu {
+  left: 0;
+}
+.chat-bubble-row.mine .chat-action-menu {
+  right: 0;
+}
+
+.chat-action-menu-reactions {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 2px 4px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.chat-action-menu-reactions button {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  padding: 3px;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+  line-height: 1;
+}
+.chat-action-menu-reactions button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.2);
+}
+
+.chat-action-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition);
+}
+.chat-action-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.chat-action-menu-item.danger {
+  color: var(--error);
+}
+.chat-action-menu-item.danger:hover {
+  background: rgba(255, 68, 51, 0.12);
+}
+
+/* Reply preview strip above the input, while composing a reply */
+.chat-reply-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 20px 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-space);
+  border-left: 3px solid var(--primary);
+}
+
+.chat-reply-preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.chat-reply-preview-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-hover);
+}
+
+.chat-reply-preview-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-reply-preview-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+.chat-reply-preview-close:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Voice/video call buttons in the chat header */
+.btn-call {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.btn-call:hover {
+  background: rgba(46, 230, 166, 0.12);
+  color: var(--primary);
 }
 
 .typing-bubble {

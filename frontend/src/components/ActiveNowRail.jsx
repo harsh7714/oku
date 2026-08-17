@@ -3,13 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
 import './ActiveNowRail.css';
-
-const avatarSrc = (u) =>
-  u?.profilePicture
-    ? getMediaUrl(u.profilePicture)
-    : `https://api.dicebear.com/7.x/bottts/svg?seed=${u?.username}`;
 
 // A horizontal rail of currently-online people the user follows — an
 // original take on the "stories bar" pattern, surfacing live presence
@@ -42,10 +37,10 @@ const ActiveNowRail = () => {
             key={person._id}
             className="active-now-item"
             onClick={() => navigate(`/messages?user=${person.username}`)}
-            title={`Message @${person.username}`}
+            title={`Message ${person.username}`}
           >
             <span className="active-now-ring">
-              <img src={avatarSrc(person)} alt="Avatar" className="avatar active-now-avatar" width="52" height="52" />
+              <img src={getAvatarUrl(person)} alt="Avatar" className="avatar active-now-avatar" width="52" height="52" />
               <span className="active-now-pulse" />
             </span>
             <span className="active-now-username">{person.username}</span>

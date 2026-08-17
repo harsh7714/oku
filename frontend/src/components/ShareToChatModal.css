@@ -1,0 +1,81 @@
+.share-to-chat-modal {
+  max-width: 380px;
+}
+
+.share-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-space);
+  border-radius: var(--radius-md);
+}
+
+.share-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.share-search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.share-list-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-list-empty-text {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  padding: 24px 0;
+}
+
+.share-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+.share-list-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.share-list-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.share-list-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-send-btn {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+}
+
+.share-send-btn.sent {
+  background: var(--bg-card-hover);
+  color: var(--success);
+  cursor: default;
+}

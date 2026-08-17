@@ -3,7 +3,9 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
+import { CallProvider } from './context/CallContext';
 import api from './services/api';
+import { subscribeToPush } from './utils/push';
 
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -51,6 +53,19 @@ const AppContent = () => {
 
     loadCounts();
   }, [user]);
+
+  // Push notifications are on by default: silently request permission and
+  // subscribe as soon as a user is authenticated, rather than waiting for
+  // them to find the toggle on the Notifications page. Notification.
+  // requestPermission() is a no-op (resolves immediately, no prompt) once
+  // the browser already has a decision on file, so this is safe to run on
+  // every load — it only actually prompts the very first time.
+  useEffect(() => {
+    if (!user) return;
+    subscribeToPush().catch((err) => {
+      console.warn('Auto push subscription skipped:', err.message);
+    });
+  }, [user?._id]);
 
   // Live badge updates from socket events
   useEffect(() => {
@@ -116,7 +131,9 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <AppContent />
+        <CallProvider>
+          <AppContent />
+        </CallProvider>
       </SocketProvider>
     </AuthProvider>
   );

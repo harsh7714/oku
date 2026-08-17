@@ -3,7 +3,8 @@ import { Image, Video, X, Send } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
+import MentionInput from './MentionInput';
 import './CreatePostBox.css';
 
 const CreatePostBox = ({ onPostCreated }) => {
@@ -94,13 +95,14 @@ const CreatePostBox = ({ onPostCreated }) => {
       <form onSubmit={handleSubmit}>
         <div className="post-input-row">
           <img
-            src={user?.profilePicture ? getMediaUrl(user.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user?.username}
+            src={getAvatarUrl(user)}
             alt="Avatar"
             className="avatar"
             width="42"
             height="42"
           />
-          <textarea
+          <MentionInput
+            as="textarea"
             placeholder="What's happening on Oku?"
             value={content}
             onChange={(e) => setContent(e.target.value)}

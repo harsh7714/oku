@@ -62,6 +62,19 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Browser/OS push subscriptions (one per device/browser the user has
+    // enabled notifications on), used to deliver Web Push even when they
+    // have no live Socket.io connection.
+    pushSubscriptions: [
+      {
+        endpoint: { type: String, required: true },
+        keys: {
+          p256dh: { type: String, required: true },
+          auth: { type: String, required: true },
+        },
+        _id: false,
+      },
+    ],
   },
   {
     timestamps: true,

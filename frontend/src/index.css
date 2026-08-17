@@ -253,6 +253,81 @@ button, input, textarea {
   justify-content: center;
 }
 
+/* Modal overlay & container — shared by ProfilePage's edit modal,
+   FollowListModal, ConfirmDialog, and ImageLightbox. Defined once here so
+   every modal gets the same stacking order instead of two same-named
+   classes fighting over z-index depending on CSS bundle order (that
+   mismatch let modals render behind the mobile bottom tab bar on some
+   builds). z-index sits above the mobile bottom nav (1000) and sticky
+   page headers (900), below the toast layer (3000). */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - 40px);
+  padding: 26px 24px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-space) 100%);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65);
+  border-radius: var(--radius-md);
+  overflow-y: auto;
+}
+
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-gradient);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 12px;
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.btn-close-modal:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
 /* Profile pictures */
 .avatar {
   border-radius: var(--radius-full);
@@ -287,8 +362,28 @@ button, input, textarea {
   max-width: 1440px;
   margin: 0 auto;
   min-height: 100vh;
+  /* Grid's `align-content` defaults to `normal`, which computes to `stretch`
+     — since min-height gives the grid more room than its auto-sized rows
+     need, that stretched the row tracks themselves (navbar included) to
+     fill the extra space, silently shifting content down by however much
+     slack min-height introduced. Pinning rows to their natural content
+     size instead makes row position/height predictable, which the Reels
+     page's mobile height math (ReelsPage.css) depends on. */
+  align-content: start;
   gap: 24px;
   padding: 24px;
+}
+
+/* Grid items default to min-width:auto, refusing to shrink below their
+   content's intrinsic width — for a page whose content includes a long,
+   single-line (nowrap+ellipsis) string like a user bio, that intrinsic
+   width is the full un-truncated text, which forced the whole middle
+   column (and the page along with it) wider than the viewport instead of
+   letting the text actually truncate. Every routed page's root element is
+   a <main> landing directly in this grid, so fixing it here covers all of
+   them at once instead of patching each page's CSS individually. */
+.app-container > main {
+  min-width: 0;
 }
 
 @media (max-width: 1200px) {

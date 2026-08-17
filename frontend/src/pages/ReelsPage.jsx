@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, Trash2, Send, Volume2, VolumeX, X, Film } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Trash2, Send, Volume2, VolumeX, X, Film } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { renderPostContent } from '../utils/renderPostContent';
 import EmptyState from '../components/EmptyState';
+import MentionInput from '../components/MentionInput';
+import ShareToChatModal from '../components/ShareToChatModal';
 import './ReelsPage.css';
 
 const REELS_PAGE_SIZE = 5;
@@ -28,6 +30,7 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
   const [newComment, setNewComment] = useState('');
   const [captionExpanded, setCaptionExpanded] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -147,17 +150,13 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
             onClick={() => navigate(`/profile/${post.userId.username}`)}
           >
             <img
-              src={
-                post.userId.profilePicture
-                  ? getMediaUrl(post.userId.profilePicture)
-                  : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username
-              }
+              src={getAvatarUrl(post.userId)}
               alt="Avatar"
               className="avatar"
               width="34"
               height="34"
             />
-            <span className="reel-username">@{post.userId.username}</span>
+            <span className="reel-username">{post.userId.username}</span>
           </div>
           {post.content && (
             <div className="reel-caption-wrap">
@@ -185,6 +184,9 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
             <MessageSquare size={26} />
             <span>{commentsCount}</span>
           </button>
+          <button className="reel-action-btn" onClick={() => setShowShareModal(true)} title="Share to chat">
+            <Share2 size={24} />
+          </button>
           {isOwner && (
             <button className="reel-action-btn" onClick={handleDeleteReel} title="Delete reel">
               <Trash2 size={22} />
@@ -192,6 +194,8 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
           )}
         </div>
       </div>
+
+      {showShareModal && <ShareToChatModal postId={post._id} onClose={() => setShowShareModal(false)} />}
 
       {showComments && (
         <div className="reel-comments-panel glass fade-in" onClick={(e) => e.stopPropagation()}>
@@ -208,11 +212,7 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
               comments.map((comment) => (
                 <div key={comment._id} className="comment-item">
                   <img
-                    src={
-                      comment.userId.profilePicture
-                        ? getMediaUrl(comment.userId.profilePicture)
-                        : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + comment.userId.username
-                    }
+                    src={getAvatarUrl(comment.userId)}
                     alt="Avatar"
                     className="avatar comment-avatar"
                     width="30"
@@ -220,7 +220,7 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
                   />
                   <div className="comment-bubble">
                     <div className="comment-header">
-                      <span className="comment-username">@{comment.userId.username}</span>
+                      <span className="comment-username">{comment.userId.username}</span>
                       <span className="comment-date">{formatRelativeTime(comment.createdAt)}</span>
                     </div>
                     <p className="comment-text">{comment.content}</p>
@@ -235,7 +235,8 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
             )}
           </div>
           <form className="comment-form" onSubmit={handleAddComment}>
-            <input
+            <MentionInput
+              as="input"
               type="text"
               placeholder="Write a comment..."
               value={newComment}

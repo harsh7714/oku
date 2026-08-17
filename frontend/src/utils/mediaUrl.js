@@ -8,3 +8,9 @@ export function getMediaUrl(mediaPath) {
   if (/^https?:\/\//i.test(mediaPath)) return mediaPath;
   return `${SERVER_URL}${mediaPath}`;
 }
+
+// Shared avatar resolver: any user-shaped object with a profilePicture, or
+// a plain generic silhouette (Instagram-style) when none is set.
+export function getAvatarUrl(user) {
+  return user?.profilePicture ? getMediaUrl(user.profilePicture) : '/default-avatar.svg';
+}

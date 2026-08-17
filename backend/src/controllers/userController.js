@@ -8,6 +8,7 @@ import { createNotification } from '../utils/createNotification.js';
 export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username.toLowerCase() })
+      .select('-pushSubscriptions')
       .populate('followers', 'username profilePicture bio')
       .populate('following', 'username profilePicture bio');
 
@@ -35,7 +36,7 @@ export const getUserProfile = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
-      .select('-password')
+      .select('-password -pushSubscriptions')
       .populate('followers', 'username profilePicture bio')
       .populate('following', 'username profilePicture bio');
 

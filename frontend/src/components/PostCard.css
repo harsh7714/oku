@@ -123,13 +123,15 @@
   color: var(--text-main);
 }
 
-.post-hashtag {
+.post-hashtag,
+.post-mention {
   color: var(--primary-hover);
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
 }
-.post-hashtag:hover {
+.post-hashtag:hover,
+.post-mention:hover {
   text-decoration: underline;
 }
 

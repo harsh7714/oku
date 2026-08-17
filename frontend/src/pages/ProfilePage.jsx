@@ -9,7 +9,7 @@ import PostViewerModal from '../components/PostViewerModal';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
 import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon } from 'lucide-react';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { toSafeHref } from '../utils/toSafeHref';
 import './ProfilePage.css';
 
@@ -228,7 +228,7 @@ const ProfilePage = () => {
         <div className="profile-meta-details">
           <div className="profile-avatar-row">
             <img
-              src={profileUser.profilePicture ? getMediaUrl(profileUser.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profileUser.username}
+              src={getAvatarUrl(profileUser)}
               alt="Avatar"
               className="profile-avatar avatar"
               width="100"
@@ -258,7 +258,7 @@ const ProfilePage = () => {
           </div>
 
           <div className="profile-text-details">
-            <h2 className="profile-username">@{profileUser.username}</h2>
+            <h2 className="profile-username">{profileUser.username}</h2>
             {profileUser.bio && <p className="profile-bio">{profileUser.bio}</p>}
             {profileUser.website && toSafeHref(profileUser.website) && (
               <a
@@ -294,7 +294,7 @@ const ProfilePage = () => {
 
       {/* User Posts list */}
       <div className="profile-posts-header">
-        <h3 className="profile-posts-title">Posts by @{profileUser.username}</h3>
+        <h3 className="profile-posts-title">Posts by {profileUser.username}</h3>
         {posts.length > 0 && (
           <div className="profile-view-toggle">
             <button
@@ -334,7 +334,7 @@ const ProfilePage = () => {
         <EmptyState
           icon={FileText}
           title="No posts yet"
-          subtitle={isOwnProfile ? "Share your first post to get started." : `@${profileUser.username} hasn't posted anything yet.`}
+          subtitle={isOwnProfile ? "Share your first post to get started." : `${profileUser.username} hasn't posted anything yet.`}
         />
       ) : filteredPosts.length === 0 ? (
         <EmptyState
@@ -343,7 +343,7 @@ const ProfilePage = () => {
           subtitle={
             isOwnProfile
               ? `Posts with a ${mediaFilter === 'image' ? 'photo' : 'video'} will show up here.`
-              : `@${profileUser.username} hasn't posted any ${mediaFilter === 'image' ? 'photos' : 'videos'} yet.`
+              : `${profileUser.username} hasn't posted any ${mediaFilter === 'image' ? 'photos' : 'videos'} yet.`
           }
         />
       ) : viewMode === 'list' ? (
@@ -428,7 +428,7 @@ const ProfilePage = () => {
               <div className="edit-avatar-section">
                 <div className="avatar-preview-wrapper">
                   <img
-                    src={profilePicPreview ? profilePicPreview : profileUser.profilePicture ? getMediaUrl(profileUser.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profileUser.username}
+                    src={profilePicPreview ? profilePicPreview : getAvatarUrl(profileUser)}
                     alt="Avatar Preview"
                     className="avatar avatar-img-preview"
                     width="80"

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { useToast } from './ToastContext';
+import { unsubscribeFromPush } from '../utils/push';
 
 const AuthContext = createContext();
 
@@ -62,7 +63,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Best-effort: drop this device's push subscription (both locally and
+    // on the server) before clearing the token, so a shared/public device
+    // doesn't keep receiving this account's push notifications after
+    // someone logs out of it.
+    try {
+      await unsubscribeFromPush();
+    } catch (err) {
+      console.warn('Push unsubscribe on logout skipped:', err.message);
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);

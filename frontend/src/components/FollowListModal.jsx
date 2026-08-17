@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, UserPlus, UserCheck, Search, Users } from 'lucide-react';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
 import './FollowListModal.css';
 
 const FollowListModal = ({ activeTab, followers, following, currentUser, onClose, onFollowToggle, profileUsername }) => {
@@ -58,8 +58,8 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
               <p>
                 {list.length === 0
                   ? tab === 'followers'
-                    ? `@${profileUsername} has no followers yet.`
-                    : `@${profileUsername} isn't following anyone yet.`
+                    ? `${profileUsername} has no followers yet.`
+                    : `${profileUsername} isn't following anyone yet.`
                   : 'No matches found.'}
               </p>
             </div>
@@ -71,18 +71,14 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
                 <div key={u._id} className="follow-list-item">
                   <div className="follow-list-user" onClick={() => goToProfile(u.username)}>
                     <img
-                      src={
-                        u.profilePicture
-                          ? getMediaUrl(u.profilePicture)
-                          : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + u.username
-                      }
+                      src={getAvatarUrl(u)}
                       alt="Avatar"
                       className="avatar"
                       width="44"
                       height="44"
                     />
                     <div className="follow-list-text">
-                      <p className="follow-list-username">@{u.username}</p>
+                      <p className="follow-list-username">{u.username}</p>
                       {u.bio && <p className="follow-list-bio">{u.bio}</p>}
                     </div>
                   </div>

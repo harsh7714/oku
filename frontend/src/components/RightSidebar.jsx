@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
 import SuggestionsCard from './SuggestionsCard';
 import './RightSidebar.css';
 
@@ -60,14 +60,14 @@ const RightSidebar = () => {
                 onClick={() => selectUser(res.username)}
               >
                 <img
-                  src={res.profilePicture ? getMediaUrl(res.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + res.username}
+                  src={getAvatarUrl(res)}
                   alt="Avatar"
                   className="avatar"
                   width="32"
                   height="32"
                 />
                 <div className="search-result-details">
-                  <p className="search-username">@{res.username}</p>
+                  <p className="search-username">{res.username}</p>
                   {res.bio && <p className="search-bio">{res.bio}</p>}
                 </div>
               </div>

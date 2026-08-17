@@ -15,6 +15,7 @@ import userRoutes from './src/routes/userRoutes.js';
 import postRoutes from './src/routes/postRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
+import pushRoutes from './src/routes/pushRoutes.js';
 import initSocket from './src/utils/socket.js';
 import { generalLimiter } from './src/middleware/rateLimiters.js';
 
@@ -63,6 +64,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/push', pushRoutes);
 
 // Base route
 app.get('/', (req, res) => {

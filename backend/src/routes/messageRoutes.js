@@ -6,6 +6,7 @@ import {
   getConversations,
   deleteMessage,
   deleteConversation,
+  reactToMessage,
 } from '../controllers/messageController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
@@ -31,6 +32,7 @@ router.post(
 );
 router.delete('/conversation/:userId', deleteConversation);
 router.delete('/:id', deleteMessage);
+router.put('/:id/react', reactToMessage);
 router.get('/:userId', getMessages);
 
 export default router;

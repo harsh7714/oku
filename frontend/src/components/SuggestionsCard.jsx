@@ -4,7 +4,7 @@ import { UserPlus } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
 
 const DEFAULT_VISIBLE = 3;
 
@@ -62,18 +62,14 @@ const SuggestionsCard = ({ className = '' }) => {
           <div key={suggestedUser._id} className="suggestion-item">
             <div className="suggestion-info" onClick={() => navigate(`/profile/${suggestedUser.username}`)}>
               <img
-                src={
-                  suggestedUser.profilePicture
-                    ? getMediaUrl(suggestedUser.profilePicture)
-                    : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + suggestedUser.username
-                }
+                src={getAvatarUrl(suggestedUser)}
                 alt="Avatar"
                 className="avatar"
                 width="36"
                 height="36"
               />
               <div className="suggestion-text">
-                <p className="suggestion-username">@{suggestedUser.username}</p>
+                <p className="suggestion-username">{suggestedUser.username}</p>
                 {suggestedUser.bio && <p className="suggestion-bio">{suggestedUser.bio}</p>}
               </div>
             </div>

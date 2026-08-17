@@ -40,6 +40,25 @@ const messageSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    // One entry per user who reacted; a user reacting again with a
+    // different emoji replaces their existing entry rather than stacking.
+    reactions: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        emoji: { type: String, required: true },
+        _id: false,
+      },
+    ],
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Message',
+      default: null,
+    },
+    sharedPost: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+      default: null,
+    },
   },
   {
     timestamps: true,

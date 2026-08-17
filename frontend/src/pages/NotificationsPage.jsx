@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
-import { Bell, Heart, MessageSquare, UserPlus, CheckCircle, Loader2 } from 'lucide-react';
+import { Bell, BellOff, BellRing, Heart, MessageSquare, UserPlus, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import EmptyState from '../components/EmptyState';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
+import { getPushSubscriptionState, subscribeToPush, unsubscribeFromPush } from '../utils/push';
 import './NotificationsPage.css';
 
 const NotificationsPage = ({ onReadNotifications }) => {
@@ -15,7 +16,34 @@ const NotificationsPage = ({ onReadNotifications }) => {
   const toast = useToast();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pushState, setPushState] = useState('unsubscribed');
+  const [pushBusy, setPushBusy] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getPushSubscriptionState().then(setPushState);
+  }, []);
+
+  const handleTogglePush = async () => {
+    setPushBusy(true);
+    try {
+      if (pushState === 'subscribed') {
+        await unsubscribeFromPush();
+        setPushState('unsubscribed');
+        toast.success('Push notifications turned off');
+      } else {
+        await subscribeToPush();
+        setPushState('subscribed');
+        toast.success('Push notifications enabled');
+      }
+    } catch (err) {
+      console.error('Push subscription toggle error:', err);
+      toast.error(err.message || 'Could not update push notifications');
+      setPushState(await getPushSubscriptionState());
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -81,7 +109,7 @@ const NotificationsPage = ({ onReadNotifications }) => {
   };
 
   const formatNotifText = (notif) => {
-    const sender = `@${notif.senderId.username}`;
+    const sender = notif.senderId.username;
     switch (notif.type) {
       case 'like':
         return <span><strong>{sender}</strong> liked your post</span>;
@@ -117,12 +145,37 @@ const NotificationsPage = ({ onReadNotifications }) => {
     <main className="notifications-main fade-in">
       <div className="notifications-header glass">
         <h2 className="notifications-title">Notifications</h2>
-        {hasUnread && (
-          <button className="btn btn-secondary btn-mark-read" onClick={handleMarkAsRead}>
-            <CheckCircle size={14} />
-            <span>Mark all read</span>
-          </button>
-        )}
+        <div className="notifications-header-actions">
+          {pushState !== 'unsupported' && (
+            <button
+              className="btn btn-secondary btn-toggle-push"
+              onClick={handleTogglePush}
+              disabled={pushBusy || pushState === 'denied'}
+              title={
+                pushState === 'denied'
+                  ? 'Notifications are blocked in your browser settings'
+                  : pushState === 'subscribed'
+                    ? 'Turn off push notifications'
+                    : 'Get notified even when Oku is closed'
+              }
+            >
+              {pushState === 'subscribed' ? <BellRing size={14} /> : <BellOff size={14} />}
+              <span>
+                {pushState === 'denied'
+                  ? 'Push blocked'
+                  : pushState === 'subscribed'
+                    ? 'Push on'
+                    : 'Enable push'}
+              </span>
+            </button>
+          )}
+          {hasUnread && (
+            <button className="btn btn-secondary btn-mark-read" onClick={handleMarkAsRead}>
+              <CheckCircle size={14} />
+              <span>Mark all read</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -147,7 +200,7 @@ const NotificationsPage = ({ onReadNotifications }) => {
               <div className="notif-details">
                 {getNotificationIcon(notif.type)}
                 <img
-                  src={notif.senderId.profilePicture ? getMediaUrl(notif.senderId.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + notif.senderId.username}
+                  src={getAvatarUrl(notif.senderId)}
                   alt="Avatar"
                   className="avatar notif-avatar"
                   width="36"

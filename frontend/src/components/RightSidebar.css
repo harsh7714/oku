@@ -62,6 +62,7 @@
 
 .search-result-details {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
 }
 .search-username {
@@ -132,6 +133,7 @@
   align-items: center;
   gap: 10px;
   flex: 1;
+  min-width: 0;
   cursor: pointer;
   overflow: hidden;
 }
@@ -141,6 +143,11 @@
 
 .suggestion-text {
   flex: 1;
+  /* Flex children default to min-width:auto, which refuses to shrink below
+     the content's own intrinsic width — for a long, single-line (nowrap)
+     bio that's the full un-truncated text width, defeating the
+     overflow/ellipsis below and blowing the whole row out past the page. */
+  min-width: 0;
   overflow: hidden;
 }
 .suggestion-username {

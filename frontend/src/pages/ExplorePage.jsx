@@ -6,7 +6,7 @@ import { Search, Loader2, SearchX, TrendingUp, Clock, X, Film } from 'lucide-rea
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useToast } from '../context/ToastContext';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import './ExplorePage.css';
 
 const EXPLORE_PAGE_SIZE = 24;
@@ -98,14 +98,14 @@ const ExplorePage = () => {
                 }}
               >
                 <img
-                  src={res.profilePicture ? getMediaUrl(res.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + res.username}
+                  src={getAvatarUrl(res)}
                   alt="Avatar"
                   className="avatar"
                   width="32"
                   height="32"
                 />
                 <div className="search-info">
-                  <span className="search-name">@{res.username}</span>
+                  <span className="search-name">{res.username}</span>
                 </div>
               </div>
             ))}

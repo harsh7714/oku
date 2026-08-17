@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, Trash2, Send, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Trash2, Send, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { renderPostContent } from '../utils/renderPostContent';
+import MentionInput from './MentionInput';
+import ShareToChatModal from './ShareToChatModal';
 import './PostViewerModal.css';
 
 // Fullscreen Instagram-style post viewer: media on one side, likes/comments
@@ -26,6 +28,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
   const [newComment, setNewComment] = useState('');
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [captionExpanded, setCaptionExpanded] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const mediaClickTimerRef = useRef(null);
 
   // Reset per-post state whenever the viewer moves to a different post
@@ -177,11 +180,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
               }}
             >
               <img
-                src={
-                  post.userId.profilePicture
-                    ? getMediaUrl(post.userId.profilePicture)
-                    : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.userId.username
-                }
+                src={getAvatarUrl(post.userId)}
                 alt="Avatar"
                 className="avatar"
                 width="36"
@@ -189,7 +188,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
               />
             </div>
             <div className="post-viewer-user-info">
-              <span className="post-username">@{post.userId.username}</span>
+              <span className="post-username">{post.userId.username}</span>
               <span className="post-time">{formatRelativeTime(post.createdAt)}</span>
             </div>
             {isOwner && (
@@ -219,11 +218,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
               comments.map((comment) => (
                 <div key={comment._id} className="comment-item">
                   <img
-                    src={
-                      comment.userId.profilePicture
-                        ? getMediaUrl(comment.userId.profilePicture)
-                        : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + comment.userId.username
-                    }
+                    src={getAvatarUrl(comment.userId)}
                     alt="Avatar"
                     className="avatar comment-avatar"
                     width="30"
@@ -231,7 +226,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
                   />
                   <div className="comment-bubble">
                     <div className="comment-header">
-                      <span className="comment-username">@{comment.userId.username}</span>
+                      <span className="comment-username">{comment.userId.username}</span>
                       <span className="comment-date">{formatRelativeTime(comment.createdAt)}</span>
                     </div>
                     <p className="comment-text">{comment.content}</p>
@@ -255,10 +250,16 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
               <MessageSquare size={20} />
               <span>{commentsCount}</span>
             </div>
+            <button className="action-btn share-btn" onClick={() => setShowShareModal(true)} title="Share to chat">
+              <Share2 size={20} />
+            </button>
           </div>
 
+          {showShareModal && <ShareToChatModal postId={post._id} onClose={() => setShowShareModal(false)} />}
+
           <form className="comment-form post-viewer-comment-form" onSubmit={handleAddComment}>
-            <input
+            <MentionInput
+              as="input"
               type="text"
               placeholder="Write a comment..."
               value={newComment}

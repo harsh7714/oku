@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Compass, Film, MessageCircle, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getMediaUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
 import './Sidebar.css';
 
 const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
@@ -82,7 +82,7 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           className={({ isActive }) => `nav-item nav-item-profile ${isActive ? 'active' : ''}`}
         >
           <img
-            src={user.profilePicture ? getMediaUrl(user.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.username}
+            src={getAvatarUrl(user)}
             alt=""
             className="nav-profile-avatar"
             width="22"
@@ -93,15 +93,15 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
       </nav>
 
       <div className="user-profile-summary">
-        <img 
-          src={user.profilePicture ? getMediaUrl(user.profilePicture) : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + user.username}
-          alt="Avatar" 
-          className="avatar" 
-          width="40" 
-          height="40" 
+        <img
+          src={getAvatarUrl(user)}
+          alt="Avatar"
+          className="avatar"
+          width="40"
+          height="40"
         />
         <div className="user-details">
-          <p className="username-label">@{user.username}</p>
+          <p className="username-label">{user.username}</p>
         </div>
         <button className="btn-logout" onClick={handleLogout} title="Log Out">
           <LogOut size={18} />

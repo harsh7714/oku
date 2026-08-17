@@ -321,72 +321,8 @@
   flex-direction: column;
 }
 
-/* Modal Overlay & Container */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(8px);
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 500px;
-  padding: 26px 24px 24px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-space) 100%);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--accent-gradient);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-glass);
-  padding-bottom: 12px;
-}
-
-.btn-close-modal {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-}
-.btn-close-modal:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-}
+/* Modal overlay/content primitives now live in index.css (shared across
+   the edit-profile modal, FollowListModal, ConfirmDialog, ImageLightbox). */
 
 .profile-edit-form {
   display: flex;
@@ -487,5 +423,16 @@
   }
   .profile-stats {
     gap: 16px;
+  }
+  .profile-avatar-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .profile-action-btns {
+    width: 100%;
+  }
+  .profile-action-btns .btn {
+    flex: 1;
+    justify-content: center;
   }
 }
