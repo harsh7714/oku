@@ -6,13 +6,25 @@ import CallModal from '../components/CallModal';
 
 const CallContext = createContext();
 
-// Free public STUN servers — enough to discover a peer's reachable address
-// behind most home/office NATs. There's no TURN relay configured, so calls
-// across very restrictive/symmetric NATs or corporate firewalls may fail to
-// connect; a production deployment would add a TURN provider here too.
+// STUN alone frequently isn't enough — mobile/cellular connections in
+// particular sit behind carrier-grade NAT that STUN can't punch through, so
+// two phones (or a phone + a network with a strict firewall) often can't
+// find a direct path to each other at all. OpenRelay's public TURN servers
+// (metered.ca/tools/openrelay) are free, require no signup, and relay the
+// media when a direct connection isn't possible — meant for exactly this
+// kind of small-scale/testing use, not heavy production traffic; a
+// growing app would want a paid TURN provider or self-hosted coturn instead.
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:openrelay.metered.ca:80' },
+  { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+  {
+    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    username: 'openrelayproject',
+    credential: 'openrelayproject',
+  },
 ];
 
 export const CallProvider = ({ children }) => {

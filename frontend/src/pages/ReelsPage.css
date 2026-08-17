@@ -8,6 +8,15 @@
   width: 100%;
   max-width: 430px;
   height: calc(100vh - 48px);
+  /* 100vh on mobile browsers is the *largest* possible viewport (address
+     bar hidden), but the page loads with that bar visible, so real,
+     currently-visible height starts out shorter — sizing to plain 100vh
+     made the feed taller than what's actually on screen, pushing its
+     bottom (and the action icons/caption in it) down past the fixed tab
+     bar instead of ending exactly at it. dvh tracks the real, current
+     viewport as the browser chrome shows/hides; the vh line above is only
+     a fallback for browsers that don't support dvh yet. */
+  height: calc(100dvh - 48px);
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   border-radius: var(--radius-lg);
@@ -213,6 +222,7 @@
   .reels-feed {
     max-width: 100%;
     height: calc(100vh - 158px);
+    height: calc(100dvh - 158px);
     border-radius: 0;
   }
   .reel-item {
@@ -221,5 +231,11 @@
        fullscreen width it left a stray gap between snap points, showing a
        sliver of the page background between reels while scrolling. */
     margin-bottom: 0;
+    /* Long-press shouldn't trigger the browser's native text-selection /
+       image-save callout, which would otherwise compete with
+       tap-to-pause/double-tap-to-like. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 }

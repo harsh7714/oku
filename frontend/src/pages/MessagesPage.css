@@ -1,5 +1,12 @@
 .messages-main {
   height: calc(100vh - 48px);
+  /* 100vh on mobile browsers is the *largest* possible viewport (address
+     bar hidden) — the page loads with that bar visible, so the actually
+     visible area starts out shorter than 100vh, clipping the last part of
+     the chat panel until the user scrolls. dvh tracks the real, current
+     viewport instead; the vh line above stays as a fallback for browsers
+     that don't support dvh yet. */
+  height: calc(100dvh - 48px);
   display: flex;
 }
 
@@ -813,6 +820,26 @@ img.chat-bubble-media {
 
 @media (max-width: 600px) {
   .messages-main {
-    height: calc(100vh - 130px);
+    /* Same chrome budget derived for Reels (ReelsPage.css): 10px app
+       padding + 56px navbar + 12px navbar margin + 16px grid gap = 94px
+       above, plus the 80px .app-container reserves below for the fixed
+       tab bar = 174px total. The previous 130px undercounted this, so the
+       page itself (not just this panel) was taller than one viewport and
+       became scrollable, hiding/shifting the conversation list and chat
+       input in a way that looked broken. */
+    height: calc(100vh - 174px);
+    height: calc(100dvh - 174px);
+  }
+
+  /* Long-press is a real gesture here (opens the reply/react/delete menu —
+     see .chat-more-btn / .chat-action-menu), so it must not also trigger
+     the browser's native text-selection/copy callout, which otherwise
+     wins the gesture and shows selection handles instead of the menu. */
+  .chat-bubble,
+  .chat-shared-post,
+  .chat-shared-reel-wrap {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 }

@@ -147,6 +147,13 @@
     flex-direction: column;
     height: 100vh;
     max-height: 100vh;
+    /* 100vh is the largest possible mobile viewport (address bar hidden);
+       the real, currently-visible one starts out shorter, so sizing to
+       plain vh could push this past its own fixed-position overlay
+       parent. dvh tracks the actual current viewport; vh above is the
+       fallback for browsers without dvh support. */
+    height: 100dvh;
+    max-height: 100dvh;
     border-radius: 0;
     width: 100vw;
   }
