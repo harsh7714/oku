@@ -99,11 +99,15 @@ const AppContent = () => {
     return <AuthPage />;
   }
 
-  const showRightSidebar = location.pathname !== '/messages' && location.pathname !== '/reels';
+  // Reels and Messages are immersive, fullscreen-on-mobile experiences —
+  // no room for the right sidebar there, and the top navbar (see below)
+  // just eats into that same reclaimed space for no benefit.
+  const isImmersivePage = location.pathname === '/messages' || location.pathname === '/reels';
+  const showRightSidebar = !isImmersivePage;
 
   return (
     <div className={`app-container ${!showRightSidebar ? 'no-right-sidebar' : ''}`}>
-      <Navbar unreadNotifications={unreadNotifications} />
+      {!isImmersivePage && <Navbar unreadNotifications={unreadNotifications} />}
       <Sidebar unreadNotifications={unreadNotifications} unreadMessages={unreadMessages} />
 
       <Routes>

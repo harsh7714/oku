@@ -207,22 +207,20 @@
 @media (max-width: 600px) {
   /* Reels is meant to be an edge-to-edge fullscreen video feed on mobile,
      but it's rendered inside .app-container's generic mobile padding
-     (10px sides, 80px bottom — reserved so ordinary scrolling pages clear
-     the fixed bottom tab bar). Reels already reserves its own clearance
-     via .reels-feed's height below, so that bottom padding is redundant
-     here — left in place it made .app-container taller than the viewport,
-     letting the whole page scroll and reveal empty space, while the
-     mismatched height math also left ~30px of the last reel hidden behind
-     the tab bar. Cancel all of it and compute the height precisely instead
-     of guessing: 10px top padding + 56px navbar + 12px navbar margin +
-     16px grid gap + 64px tab bar = 158px of chrome to subtract. */
+     (10px all round, 80px on the bottom specifically — reserved so
+     ordinary scrolling pages clear the fixed bottom tab bar). The mobile
+     top navbar is no longer rendered at all on this route (see App.jsx),
+     so the only chrome left to account for is app-container's own padding
+     plus the 64px tab bar. Cancel the padding entirely (Reels reserves its
+     own clearance via .reels-feed's height below, so it's redundant here)
+     and compute the height precisely: viewport minus the 64px tab bar. */
   .reels-main {
-    margin: 0 -10px -80px;
+    margin: -10px -10px -80px;
   }
   .reels-feed {
     max-width: 100%;
-    height: calc(100vh - 158px);
-    height: calc(100dvh - 158px);
+    height: calc(100vh - 64px);
+    height: calc(100dvh - 64px);
     border-radius: 0;
   }
   .reel-item {

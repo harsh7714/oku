@@ -837,15 +837,12 @@ img.chat-bubble-media {
 
 @media (max-width: 600px) {
   .messages-main {
-    /* Same chrome budget derived for Reels (ReelsPage.css): 10px app
-       padding + 56px navbar + 12px navbar margin + 16px grid gap = 94px
-       above, plus the 80px .app-container reserves below for the fixed
-       tab bar = 174px total. The previous 130px undercounted this, so the
-       page itself (not just this panel) was taller than one viewport and
-       became scrollable, hiding/shifting the conversation list and chat
-       input in a way that looked broken. */
-    height: calc(100vh - 174px);
-    height: calc(100dvh - 174px);
+    /* The mobile top navbar is no longer rendered at all on this route
+       (see App.jsx), so the only chrome left is .app-container's own 10px
+       top padding plus the 80px it reserves at the bottom for the fixed
+       tab bar. */
+    height: calc(100vh - 90px);
+    height: calc(100dvh - 90px);
   }
 
   /* Long-press is a real gesture here (opens the reply/react/delete menu —
@@ -867,9 +864,9 @@ img.chat-bubble-media {
      MessagesPage.jsx from `activePartner`); the list view keeps its
      normal boxed layout. */
   .messages-main.chat-open {
-    margin: 0 -10px -80px;
-    height: calc(100vh - 158px);
-    height: calc(100dvh - 158px);
+    margin: -10px -10px -80px;
+    height: calc(100vh - 64px);
+    height: calc(100dvh - 64px);
   }
   .messages-main.chat-open .messages-shell {
     border-radius: 0;
