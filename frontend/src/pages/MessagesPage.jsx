@@ -464,7 +464,7 @@ const MessagesPage = ({ onOpen }) => {
   const isPartnerOnline = activePartner && onlineUsers.includes(activePartner._id);
 
   return (
-    <main className="messages-main fade-in">
+    <main className={`messages-main fade-in ${activePartner ? 'chat-open' : ''}`}>
       <div className="messages-shell glass">
         {/* Conversations panel */}
         <aside className={`conversations-panel ${activePartner ? 'hide-on-mobile' : ''}`}>

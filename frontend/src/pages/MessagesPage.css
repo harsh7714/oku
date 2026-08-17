@@ -131,6 +131,14 @@
 .conversation-username {
   font-weight: 600;
   font-size: 0.92rem;
+  /* Flex children default to min-width:auto, refusing to shrink below
+     their own content width — for a long username that's the full
+     un-truncated text, which pushed .conversation-time out of the row
+     and could blow the whole item past the panel's edge. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .conversation-time {
@@ -220,11 +228,20 @@
 .chat-header-info {
   display: flex;
   flex-direction: column;
+  /* Same fix as .conversation-username: without flex:1 + min-width:0, a
+     long name refuses to shrink and pushes the call/delete buttons out of
+     the header, breaking the whole row's layout instead of truncating. */
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .chat-header-username {
   font-weight: 700;
   font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-header-status {
@@ -841,5 +858,20 @@ img.chat-bubble-media {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+  }
+
+  /* An open conversation goes fully edge-to-edge, the same treatment as
+     Reels — the "glass" card padding/rounding that suits the conversation
+     list makes an active chat feel cramped instead of like a real chat
+     app. Only applied while a chat is open (.chat-open, set in
+     MessagesPage.jsx from `activePartner`); the list view keeps its
+     normal boxed layout. */
+  .messages-main.chat-open {
+    margin: 0 -10px -80px;
+    height: calc(100vh - 158px);
+    height: calc(100dvh - 158px);
+  }
+  .messages-main.chat-open .messages-shell {
+    border-radius: 0;
   }
 }
