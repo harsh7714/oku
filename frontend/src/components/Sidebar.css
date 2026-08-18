@@ -228,41 +228,21 @@
     flex: 1;
   }
 
-  /* A small gradient bar tops the active tab, and its icon sits in a soft
-     tinted pill instead of just changing color — the old flat "just turn
-     the stroke green" treatment made it hard to tell which tab was active
-     at a glance. */
   .nav-item.active {
     background: transparent;
     border: none;
     box-shadow: none;
   }
-  .nav-item.active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 26px;
-    height: 3px;
-    border-radius: 0 0 4px 4px;
-    background: var(--accent-gradient);
-  }
-  /* The pill background/padding lives on this wrapping <span>, not the
-     <svg> icon itself — SVG is a "replaced element" and doesn't reliably
-     grow its box in response to CSS padding the way a normal element
-     does, so padding applied directly to .nav-icon was silently a no-op
-     (the icon stayed a bare 22x22px with no visible pill around it). */
+  /* This wrapping <span> exists purely so the icon has a reliably-sized
+     box — SVG is a "replaced element" and doesn't grow from CSS padding
+     applied directly to it the way a normal element does, so an icon
+     styled directly would render as a bare, easy-to-miss 22x22px mark.
+     The active state itself is just a color/fill change, no background. */
   .nav-icon-pill {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 9px;
-    border-radius: var(--radius-full);
-    transition: var(--transition);
-  }
-  .nav-item.active .nav-icon-pill {
-    background: rgba(46, 230, 166, 0.14);
   }
   .nav-item.active .nav-icon {
     color: var(--primary);

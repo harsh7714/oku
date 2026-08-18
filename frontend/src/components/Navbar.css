@@ -43,27 +43,37 @@
 
   .mobile-notification-btn {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-glass);
-    border-radius: var(--radius-full);
+    background: transparent;
+    border: none;
     color: var(--text-main);
+    padding: 8px;
+    border-radius: var(--radius-full);
     cursor: pointer;
     transition: var(--transition);
   }
-  .mobile-notification-btn:active {
-    background: rgba(46, 230, 166, 0.14);
-    border-color: var(--primary);
-    transform: scale(0.94);
+
+  .mobile-notification-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .mobile-notification-badge {
     position: absolute;
-    top: -3px;
-    right: -3px;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--bg-dark);
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--bg-dark);
   }
 }

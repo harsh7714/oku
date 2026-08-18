@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = ({ unreadNotifications = 0 }) => {
   const { user } = useAuth();
@@ -19,10 +19,14 @@ const Navbar = ({ unreadNotifications = 0 }) => {
       <button
         className="mobile-notification-btn"
         onClick={() => navigate('/notifications')}
-        title="Notifications"
+        aria-label="Notifications"
       >
         <Bell size={22} />
-        {unreadNotifications > 0 && <span className="nav-badge badge mobile-notification-badge">{unreadNotifications}</span>}
+        {unreadNotifications > 0 && (
+          <span className="mobile-notification-badge">
+            {unreadNotifications > 9 ? '9+' : unreadNotifications}
+          </span>
+        )}
       </button>
     </header>
   );
