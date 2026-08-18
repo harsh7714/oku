@@ -77,6 +77,10 @@
   padding: 8px 16px;
 }
 
+.btn-logout-mobile {
+  display: none;
+}
+
 .profile-text-details {
   display: flex;
   flex-direction: column;
@@ -434,5 +438,8 @@
   .profile-action-btns .btn {
     flex: 1;
     justify-content: center;
+  }
+  .btn-logout-mobile {
+    display: flex;
   }
 }

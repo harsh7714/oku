@@ -9,7 +9,7 @@ import FollowListModal from '../components/FollowListModal';
 import PostViewerModal from '../components/PostViewerModal';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
-import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon } from 'lucide-react';
+import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon, LogOut } from 'lucide-react';
 import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { toSafeHref } from '../utils/toSafeHref';
 import './ProfilePage.css';
@@ -17,7 +17,7 @@ import './ProfilePage.css';
 const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser, setUser: setCurrentUser } = useAuth();
+  const { user: currentUser, setUser: setCurrentUser, logout } = useAuth();
   const toast = useToast();
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -195,6 +195,11 @@ const ProfilePage = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   if (loading) {
     return (
       <div className="profile-loading">
@@ -237,10 +242,16 @@ const ProfilePage = () => {
             />
             <div className="profile-action-btns">
               {isOwnProfile ? (
-                <button className="btn btn-secondary btn-edit-profile" onClick={() => setShowEditModal(true)}>
-                  <Edit2 size={14} />
-                  <span>Edit Profile</span>
-                </button>
+                <>
+                  <button className="btn btn-secondary btn-edit-profile" onClick={() => setShowEditModal(true)}>
+                    <Edit2 size={14} />
+                    <span>Edit Profile</span>
+                  </button>
+                  <button className="btn btn-secondary btn-logout-mobile" onClick={handleLogout} title="Log Out">
+                    <LogOut size={14} />
+                    <span>Logout</span>
+                  </button>
+                </>
               ) : (
                 <>
                   <button className="btn btn-secondary btn-message-user" onClick={() => navigate(`/messages?user=${profileUser.username}`)}>
