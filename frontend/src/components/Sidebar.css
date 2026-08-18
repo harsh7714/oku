@@ -237,7 +237,8 @@
      box — SVG is a "replaced element" and doesn't grow from CSS padding
      applied directly to it the way a normal element does, so an icon
      styled directly would render as a bare, easy-to-miss 22x22px mark.
-     The active state itself is just a color/fill change, no background. */
+     The active state itself is just an outline color change, no fill,
+     no background — same treatment as active text. */
   .nav-icon-pill {
     display: flex;
     align-items: center;
@@ -246,10 +247,6 @@
   }
   .nav-item.active .nav-icon {
     color: var(--primary);
-    fill: var(--primary);
-  }
-  .nav-item.active .lucide-compass path {
-    fill: var(--bg-dark);
   }
 
   .nav-item .nav-profile-avatar {
@@ -262,5 +259,11 @@
   .icon-wrapper .nav-badge {
     top: -2px;
     right: -2px;
+  }
+
+  /* Notifications now lives only in the Home page's top navbar bell —
+     the bottom bar drops it to make room and avoid duplicating it. */
+  .nav-item-notifications {
+    display: none;
   }
 }
