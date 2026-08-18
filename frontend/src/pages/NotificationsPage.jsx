@@ -3,11 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
-import { Bell, BellOff, BellRing, Heart, MessageSquare, UserPlus, CheckCircle, Loader2 } from 'lucide-react';
+import { Bell, Heart, MessageSquare, UserPlus, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import EmptyState from '../components/EmptyState';
 import { getAvatarUrl } from '../utils/mediaUrl';
-import { getPushSubscriptionState, subscribeToPush, unsubscribeFromPush } from '../utils/push';
 import './NotificationsPage.css';
 
 const NotificationsPage = ({ onReadNotifications }) => {
@@ -16,34 +15,7 @@ const NotificationsPage = ({ onReadNotifications }) => {
   const toast = useToast();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pushState, setPushState] = useState('unsubscribed');
-  const [pushBusy, setPushBusy] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    getPushSubscriptionState().then(setPushState);
-  }, []);
-
-  const handleTogglePush = async () => {
-    setPushBusy(true);
-    try {
-      if (pushState === 'subscribed') {
-        await unsubscribeFromPush();
-        setPushState('unsubscribed');
-        toast.success('Push notifications turned off');
-      } else {
-        await subscribeToPush();
-        setPushState('subscribed');
-        toast.success('Push notifications enabled');
-      }
-    } catch (err) {
-      console.error('Push subscription toggle error:', err);
-      toast.error(err.message || 'Could not update push notifications');
-      setPushState(await getPushSubscriptionState());
-    } finally {
-      setPushBusy(false);
-    }
-  };
 
   const fetchNotifications = async () => {
     try {
@@ -146,29 +118,6 @@ const NotificationsPage = ({ onReadNotifications }) => {
       <div className="notifications-header glass">
         <h2 className="notifications-title">Notifications</h2>
         <div className="notifications-header-actions">
-          {pushState !== 'unsupported' && (
-            <button
-              className="btn btn-secondary btn-toggle-push"
-              onClick={handleTogglePush}
-              disabled={pushBusy || pushState === 'denied'}
-              title={
-                pushState === 'denied'
-                  ? 'Notifications are blocked in your browser settings'
-                  : pushState === 'subscribed'
-                    ? 'Turn off push notifications'
-                    : 'Get notified even when Oku is closed'
-              }
-            >
-              {pushState === 'subscribed' ? <BellRing size={14} /> : <BellOff size={14} />}
-              <span>
-                {pushState === 'denied'
-                  ? 'Push blocked'
-                  : pushState === 'subscribed'
-                    ? 'Push on'
-                    : 'Enable push'}
-              </span>
-            </button>
-          )}
           {hasUnread && (
             <button className="btn btn-secondary btn-mark-read" onClick={handleMarkAsRead}>
               <CheckCircle size={14} />
