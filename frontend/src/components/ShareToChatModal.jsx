@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Search, Check, Send } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -65,7 +66,11 @@ const ShareToChatModal = ({ postId, onClose }) => {
   const searching = searchQuery.trim().length > 1;
   const list = searching ? searchResults : conversations;
 
-  return (
+  // Portaled to <body> — see ConfirmDialog.jsx for why: rendered inline, a
+  // `.fade-in`-animated ancestor (e.g. this can open from a post deep in a
+  // scrolled feed) traps this `position: fixed` overlay against its own
+  // box instead of the viewport.
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content fade-in share-to-chat-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -118,7 +123,8 @@ const ShareToChatModal = ({ postId, onClose }) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

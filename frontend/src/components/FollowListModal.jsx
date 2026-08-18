@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { X, UserPlus, UserCheck, Search, Users } from 'lucide-react';
 import { getAvatarUrl } from '../utils/mediaUrl';
@@ -17,7 +18,11 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
     navigate(`/profile/${username}`);
   };
 
-  return (
+  // Portaled to <body> — see ConfirmDialog.jsx for why: rendered inline, a
+  // `.fade-in`-animated ancestor (ProfilePage's root) traps this
+  // `position: fixed` overlay against its own (possibly tall) box instead
+  // of the viewport.
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content fade-in follow-list-modal" onClick={(e) => e.stopPropagation()}>
         <div className="follow-modal-header">
@@ -97,7 +102,8 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

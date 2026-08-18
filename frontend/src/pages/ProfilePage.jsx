@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -396,8 +397,15 @@ const ProfilePage = () => {
         />
       )}
 
-      {/* Edit Profile Modal */}
-      {showEditModal && (
+      {/* Edit Profile Modal — portaled to <body>. Rendered inline, this
+          `position: fixed` overlay gets trapped by the `.fade-in`
+          animation on this page's own root <main> (an animation's
+          transform, even finished with fill-mode: forwards, creates a
+          containing block for fixed descendants), so it ends up centered
+          against that long, scrollable profile page instead of the actual
+          viewport — it could open seemingly "at the bottom" of the page
+          rather than in front of whatever the user was looking at. */}
+      {showEditModal && createPortal(
         <div className="modal-overlay">
           <div className="modal-content fade-in">
             <div className="modal-header">
@@ -470,7 +478,8 @@ const ProfilePage = () => {
               </button>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Followers / Following Modal */}

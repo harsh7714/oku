@@ -206,21 +206,30 @@
 
 @media (max-width: 600px) {
   /* Reels is meant to be an edge-to-edge fullscreen video feed on mobile,
-     but it's rendered inside .app-container's generic mobile padding
-     (10px all round, 80px on the bottom specifically — reserved so
-     ordinary scrolling pages clear the fixed bottom tab bar). The mobile
-     top navbar is no longer rendered at all on this route (see App.jsx),
-     so the only chrome left to account for is app-container's own padding
-     plus the 64px tab bar. Cancel the padding entirely (Reels reserves its
-     own clearance via .reels-feed's height below, so it's redundant here)
-     and compute the height precisely: viewport minus the 64px tab bar. */
+     but it's rendered inside .app-container's generic mobile padding, as a
+     CSS Grid item. Cancelling that padding with a negative margin turned
+     out to be unreliable — the grid's own auto row-sizing computes track
+     height from the item's un-margined content size, so the item ends up
+     taller than its track and negative margins don't reliably shift it
+     the way they would in normal flow. Taking it out of the grid with
+     `position: fixed` sidesteps that entirely, and as a bonus is immune to
+     the mobile-browser vh/dvh mismatch too — a fixed box with top/bottom
+     offsets is always sized against the real, current viewport, no vh
+     unit involved. `bottom: 64px` reserves exactly the tab bar's height;
+     the tab bar (position: fixed, z-index: 1000) then simply paints over
+     that reserved strip. */
   .reels-main {
-    margin: -10px -10px -80px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    z-index: 1;
+    margin: 0;
   }
   .reels-feed {
     max-width: 100%;
-    height: calc(100vh - 64px);
-    height: calc(100dvh - 64px);
+    height: 100%;
     border-radius: 0;
   }
   .reel-item {

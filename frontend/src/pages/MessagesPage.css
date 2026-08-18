@@ -862,13 +862,26 @@ img.chat-bubble-media {
      list makes an active chat feel cramped instead of like a real chat
      app. Only applied while a chat is open (.chat-open, set in
      MessagesPage.jsx from `activePartner`); the list view keeps its
-     normal boxed layout. */
+     normal boxed layout below.
+
+     Taken out of the grid with `position: fixed` rather than cancelling
+     .app-container's padding via negative margin — the grid's own
+     auto-row-sizing computes track height from the item's un-margined
+     size, so negative margins didn't reliably shift it the way they would
+     in normal flow (see ReelsPage.css for the full explanation, and the
+     same fix). `bottom: 64px` reserves exactly the tab bar's height. */
   .messages-main.chat-open {
-    margin: -10px -10px -80px;
-    height: calc(100vh - 64px);
-    height: calc(100dvh - 64px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    z-index: 1;
+    margin: 0;
+    height: auto;
   }
   .messages-main.chat-open .messages-shell {
     border-radius: 0;
+    height: 100%;
   }
 }
