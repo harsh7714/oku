@@ -181,7 +181,11 @@
 }
 
 @media (max-width: 600px) {
-  .sidebar {
+  /* Doubled up as .sidebar.glass rather than .sidebar alone — the JSX keeps
+     the shared `glass` class for the desktop rail's look, so this needs
+     higher specificity than plain `.glass` (defined in index.css, whose
+     load order relative to this file isn't guaranteed) to reliably win. */
+  .sidebar.glass {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -191,11 +195,14 @@
     flex-direction: row;
     justify-content: space-around;
     padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     margin: 0;
     z-index: 1000;
     border-radius: 0;
-    border-top: 1px solid var(--border-glass);
-    overflow: hidden;
+    border-top: none;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-dark) 100%);
+    box-shadow: 0 -1px 0 0 rgba(46, 230, 166, 0.18), 0 -8px 24px rgba(0, 0, 0, 0.35);
+    overflow: visible;
   }
   .logo-section, .user-profile-summary {
     display: none;
@@ -203,10 +210,16 @@
   .nav-menu {
     flex-direction: row;
     justify-content: space-around;
+    align-items: center;
     width: 100%;
+    height: 100%;
     gap: 0;
   }
   .nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 0;
     border: none;
     background: transparent;
@@ -214,10 +227,42 @@
     height: 100%;
     flex: 1;
   }
+
+  /* A small gradient bar tops the active tab, and its icon sits in a soft
+     tinted pill instead of just changing color — the old flat "just turn
+     the stroke green" treatment made it hard to tell which tab was active
+     at a glance. */
   .nav-item.active {
     background: transparent;
     border: none;
     box-shadow: none;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 3px;
+    border-radius: 0 0 4px 4px;
+    background: var(--accent-gradient);
+  }
+  /* The pill background/padding lives on this wrapping <span>, not the
+     <svg> icon itself — SVG is a "replaced element" and doesn't reliably
+     grow its box in response to CSS padding the way a normal element
+     does, so padding applied directly to .nav-icon was silently a no-op
+     (the icon stayed a bare 22x22px with no visible pill around it). */
+  .nav-icon-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px;
+    border-radius: var(--radius-full);
+    transition: var(--transition);
+  }
+  .nav-item.active .nav-icon-pill {
+    background: rgba(46, 230, 166, 0.14);
   }
   .nav-item.active .nav-icon {
     color: var(--primary);
@@ -227,8 +272,15 @@
     fill: var(--bg-dark);
   }
 
-  /* Notifications moves to the top-right of the mobile navbar instead */
-  .nav-item-notifications {
-    display: none;
+  .nav-item .nav-profile-avatar {
+    transition: var(--transition);
+  }
+  .nav-item-profile.active .nav-profile-avatar {
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+
+  .icon-wrapper .nav-badge {
+    top: -2px;
+    right: -2px;
   }
 }

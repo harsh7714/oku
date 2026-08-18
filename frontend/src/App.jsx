@@ -100,14 +100,19 @@ const AppContent = () => {
   }
 
   // Reels and Messages are immersive, fullscreen-on-mobile experiences —
-  // no room for the right sidebar there, and the top navbar (see below)
-  // just eats into that same reclaimed space for no benefit.
+  // no room for the right sidebar there.
   const isImmersivePage = location.pathname === '/messages' || location.pathname === '/reels';
   const showRightSidebar = !isImmersivePage;
+  // The mobile top navbar (branding + notification bell) is only really
+  // "home" for the app's own wordmark — every other page either has its
+  // own page-specific header already or, on Reels/Messages, no room for
+  // one at all — so it's restricted to the home feed instead of repeating
+  // on every route.
+  const showMobileNavbar = location.pathname === '/';
 
   return (
     <div className={`app-container ${!showRightSidebar ? 'no-right-sidebar' : ''}`}>
-      {!isImmersivePage && <Navbar unreadNotifications={unreadNotifications} />}
+      {showMobileNavbar && <Navbar unreadNotifications={unreadNotifications} />}
       <Sidebar unreadNotifications={unreadNotifications} unreadMessages={unreadMessages} />
 
       <Routes>

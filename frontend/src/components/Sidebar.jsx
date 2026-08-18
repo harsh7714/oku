@@ -30,7 +30,9 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           title="Home"
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
-          <Home className="nav-icon" size={22} />
+          <span className="nav-icon-pill">
+            <Home className="nav-icon" size={22} />
+          </span>
           <span className="nav-label">Home</span>
         </NavLink>
 
@@ -39,7 +41,9 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           title="Explore"
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
-          <Compass className="nav-icon" size={22} />
+          <span className="nav-icon-pill">
+            <Compass className="nav-icon" size={22} />
+          </span>
           <span className="nav-label">Explore</span>
         </NavLink>
 
@@ -48,7 +52,9 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           title="Reels"
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
-          <Film className="nav-icon" size={22} />
+          <span className="nav-icon-pill">
+            <Film className="nav-icon" size={22} />
+          </span>
           <span className="nav-label">Reels</span>
         </NavLink>
 
@@ -58,7 +64,9 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <div className="icon-wrapper">
-            <MessageCircle className="nav-icon" size={22} />
+            <span className="nav-icon-pill">
+              <MessageCircle className="nav-icon" size={22} />
+            </span>
             {unreadMessages > 0 && <span className="nav-badge badge">{unreadMessages}</span>}
           </div>
           <span className="nav-label">Messages</span>
@@ -70,7 +78,9 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           className={({ isActive }) => `nav-item nav-item-notifications ${isActive ? 'active' : ''}`}
         >
           <div className="icon-wrapper">
-            <Bell className="nav-icon" size={22} />
+            <span className="nav-icon-pill">
+              <Bell className="nav-icon" size={22} />
+            </span>
             {unreadNotifications > 0 && <span className="nav-badge badge">{unreadNotifications}</span>}
           </div>
           <span className="nav-label">Notifications</span>

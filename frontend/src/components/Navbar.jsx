@@ -11,7 +11,7 @@ const Navbar = ({ unreadNotifications = 0 }) => {
   if (!user) return null;
 
   return (
-    <header className="mobile-navbar glass">
+    <header className="mobile-navbar">
       <div className="mobile-logo-group" onClick={() => navigate('/')}>
         <img src="/favicon.svg" alt="" className="mobile-logo-icon" width="26" height="26" />
         <h1 className="mobile-logo">Oku</h1>
