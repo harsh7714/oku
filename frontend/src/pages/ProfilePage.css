@@ -474,7 +474,12 @@
     flex: 1;
     justify-content: center;
   }
-  .btn-logout-mobile {
-    display: flex;
-  }
+.btn-logout-profile {
+  display: inline-flex;
+}
+.btn-logout-profile:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error);
+}
+
 }

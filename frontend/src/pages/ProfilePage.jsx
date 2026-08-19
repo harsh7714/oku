@@ -269,10 +269,11 @@ const ProfilePage = () => {
                     <Edit2 size={14} />
                     <span>Edit Profile</span>
                   </button>
-                  <button className="btn btn-secondary btn-logout-mobile" onClick={handleLogout} title="Log Out">
+                  <button className="btn btn-secondary btn-logout-profile" onClick={handleLogout} title="Log Out">
                     <LogOut size={14} />
                     <span>Logout</span>
                   </button>
+
                 </>
               ) : (
                 <>
