@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Push Public Key
+description: |
+  200  Returns VAPID public key for Web Push subscription
+  500  Web Push not configured on server
+url: http://localhost:5000/api/push/public-key
+method: GET
+order: 3114334857819030

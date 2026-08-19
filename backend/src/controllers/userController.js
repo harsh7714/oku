@@ -1,4 +1,8 @@
 import User from '../models/User.js';
+import Post from '../models/Post.js';
+import Comment from '../models/Comment.js';
+import Message from '../models/Message.js';
+import Notification from '../models/Notification.js';
 import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
 import { createNotification } from '../utils/createNotification.js';
 
@@ -225,3 +229,70 @@ export const getSuggestedUsers = async (req, res) => {
     res.status(500).json({ message: 'Server error getting suggestions' });
   }
 };
+
+// @desc    Delete user account and all associated data
+// @route   DELETE /api/users/account
+// @access  Private
+export const deleteUserAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // 1. Delete user profile & cover images from S3 if custom
+    if (user.profilePicture) {
+      await deleteFileFromS3(user.profilePicture);
+    }
+    if (user.coverPicture) {
+      await deleteFileFromS3(user.coverPicture);
+    }
+
+    // 2. Find all user posts to clean up post media from S3
+    const userPosts = await Post.find({ userId });
+    for (const post of userPosts) {
+      if (post.media) {
+        await deleteFileFromS3(post.media);
+      }
+    }
+    const userPostIds = userPosts.map((p) => p._id);
+
+    // 3. Delete user posts
+    await Post.deleteMany({ userId });
+
+    // 4. Delete comments authored by user OR on user's posts
+    await Comment.deleteMany({
+      $or: [{ userId }, { postId: { $in: userPostIds } }],
+    });
+
+    // 5. Remove user from other users' followers and following lists
+    await User.updateMany(
+      {},
+      { $pull: { followers: userId, following: userId } }
+    );
+
+    // 6. Remove user's likes from all remaining posts
+    await Post.updateMany({}, { $pull: { likes: userId } });
+
+    // 7. Delete notifications sent to or from this user
+    await Notification.deleteMany({
+      $or: [{ recipient: userId }, { sender: userId }],
+    });
+
+    // 8. Delete messages sent to or from this user
+    await Message.deleteMany({
+      $or: [{ senderId: userId }, { receiverId: userId }],
+    });
+
+    // 9. Delete user document
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('deleteUserAccount Error:', error);
+    res.status(500).json({ message: 'Server error deleting user account' });
+  }
+};
+

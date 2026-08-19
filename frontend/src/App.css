@@ -21,14 +21,15 @@
   grid-template-columns: 280px 1fr;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .app-container.no-right-sidebar {
     grid-template-columns: 80px 1fr;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .app-container.no-right-sidebar {
     grid-template-columns: 1fr;
   }
 }
+

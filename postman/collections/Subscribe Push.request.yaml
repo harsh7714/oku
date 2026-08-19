@@ -1,0 +1,17 @@
+$kind: http-request
+name: Subscribe Push
+description: |
+  200  Push subscription saved successfully
+  400  Invalid push subscription object
+  401  "Not authorized"
+  500  Server error saving subscription
+url: http://localhost:5000/api/push/subscribe
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: ''
+body:
+  type: json
+  content: '{"subscription":{"endpoint":"https://fcm.googleapis.com/fcm/send/...","keys":{"p256dh":"...","auth":"..."}}}'
+order: 3114334857819031

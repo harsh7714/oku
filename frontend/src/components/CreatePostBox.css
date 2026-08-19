@@ -106,3 +106,22 @@
   transform: none;
   box-shadow: none;
 }
+
+@media (max-width: 768px) {
+  .create-post-box {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .post-input-row {
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .post-textarea {
+    font-size: 1rem;
+    min-height: 52px;
+  }
+  .post-footer-row {
+    padding-top: 10px;
+  }
+}
+

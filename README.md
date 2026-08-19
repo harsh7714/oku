@@ -11,13 +11,15 @@ Oku is a full-stack real-time social media application — a feed, profiles, fol
 ## Features
 
 - Email/username + password auth with JWT sessions
-- Home feed and Explore (latest / trending, hashtag filtering) with infinite scroll
+- Home feed and Explore (latest / trending, hashtag filtering) with infinite scroll & optimized post viewing height
 - Posts with text, image, or video, likes, and threaded comments
 - Follow / unfollow, followers & following lists, suggested users, user search
-- Profiles with editable bio, avatar, and cover photo
+- Profiles with editable bio, avatar, cover photo, and **Delete Account** option (with cascade cleanup of posts, media, comments, messages, notifications)
 - Real-time direct messaging with typing indicators, read receipts, and online presence
-- Real-time notifications for likes, comments, and follows
-- Toast notifications for all user-facing success/error feedback, with in-app confirmation dialogs in place of native browser alerts
+- Real-time notifications (Socket.IO) and browser **Web Push notifications** (VAPID)
+- Fully responsive UX across Desktop, Tablet (768px – 1024px), and Mobile (< 768px) with bottom tab navigation
+- Toast notifications for user-facing feedback, with themed in-app confirmation dialogs for destructive actions
+
 
 ## Project Structure
 
@@ -119,9 +121,11 @@ All endpoints are mounted under `/api` and (aside from `auth/register` and `auth
 | Base | Handles |
 |---|---|
 | `/api/auth` | Register, login, current-session lookup |
-| `/api/users` | Profiles, follow/unfollow, search, suggestions |
+| `/api/users` | Profiles, follow/unfollow, search, suggestions, **delete account** (`DELETE /account`) |
 | `/api/posts` | Feed, explore, create/delete, likes, comments |
 | `/api/messages` | Conversations, send/delete messages |
 | `/api/notifications` | List and mark-as-read |
+| `/api/push` | VAPID public key lookup, push subscription & unsubscription |
 
 Real-time events (likes/comments/follows/messages/typing/presence) are delivered over Socket.IO alongside the REST API.
+

@@ -7,9 +7,11 @@ import PostCard from '../components/PostCard';
 import CreatePostBox from '../components/CreatePostBox';
 import FollowListModal from '../components/FollowListModal';
 import PostViewerModal from '../components/PostViewerModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
-import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon, LogOut } from 'lucide-react';
+import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon, LogOut, Trash2 } from 'lucide-react';
+
 import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { toSafeHref } from '../utils/toSafeHref';
 import './ProfilePage.css';
@@ -37,8 +39,28 @@ const ProfilePage = () => {
   const [coverPicPreview, setCoverPicPreview] = useState('');
   
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await api.delete('/users/account');
+      toast.success('Your account has been deleted.');
+      setShowDeleteConfirm(false);
+      setShowEditModal(false);
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Delete account error:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete account');
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
 
   const fetchProfile = async () => {
+
     setLoading(true);
     try {
       // Fetch user profile
@@ -487,10 +509,38 @@ const ProfilePage = () => {
               <button type="submit" className="btn btn-primary btn-save-profile" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Profile'}
               </button>
+
+              <div className="danger-zone-card">
+                <div className="danger-zone-info">
+                  <h4 className="danger-zone-title">Delete Account</h4>
+                  <p className="danger-zone-desc">Permanently remove your profile, posts, comments, and messages.</p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-delete-account"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 size={14} />
+                  <span>Delete Account</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>,
         document.body
+      )}
+
+      {/* Account Deletion Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Delete Account Permanently?"
+          message="Are you sure you want to delete your account? All your posts, comments, messages, followers, and profile data will be permanently erased. This action cannot be undone."
+          confirmLabel={deletingAccount ? 'Deleting...' : 'Permanently Delete'}
+          cancelLabel="Cancel"
+          danger={true}
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       )}
 
       {/* Followers / Following Modal */}
@@ -508,5 +558,6 @@ const ProfilePage = () => {
     </main>
   );
 };
+
 
 export default ProfilePage;

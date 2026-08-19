@@ -1,0 +1,14 @@
+$kind: http-request
+name: Delete Account
+description: |
+  200  Account and all associated posts, comments, messages, and files permanently deleted
+  401  "Not authorized, no token provided" / "Not authorized, token failed"
+  404  "User not found"
+  500  Server error deleting user account
+url: http://localhost:5000/api/users/account
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: ''
+order: 3114334857819025

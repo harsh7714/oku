@@ -1,0 +1,17 @@
+$kind: http-request
+name: Unsubscribe Push
+description: |
+  200  Push subscription removed successfully
+  400  Endpoint parameter is required
+  401  "Not authorized"
+  500  Server error removing subscription
+url: http://localhost:5000/api/push/unsubscribe
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: ''
+body:
+  type: json
+  content: '{"endpoint":"https://fcm.googleapis.com/fcm/send/..."}'
+order: 3114334857819032

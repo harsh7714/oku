@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Video, X, Send } from 'lucide-react';
+import { Image, X, Send } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';

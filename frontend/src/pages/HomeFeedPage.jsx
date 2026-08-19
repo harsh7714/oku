@@ -45,9 +45,10 @@ const HomeFeedPage = () => {
 
       <ActiveNowRail />
 
+      <CreatePostBox onPostCreated={handlePostCreated} />
+
       <SuggestionsCard className="mobile-suggestions" />
 
-      <CreatePostBox onPostCreated={handlePostCreated} />
 
       {loading && posts.length === 0 ? (
         <div className="feed-posts-list">

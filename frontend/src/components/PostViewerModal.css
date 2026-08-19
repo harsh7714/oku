@@ -139,7 +139,7 @@
   gap: 10px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .post-viewer-overlay {
     padding: 0;
   }
@@ -147,11 +147,6 @@
     flex-direction: column;
     height: 100vh;
     max-height: 100vh;
-    /* 100vh is the largest possible mobile viewport (address bar hidden);
-       the real, currently-visible one starts out shorter, so sizing to
-       plain vh could push this past its own fixed-position overlay
-       parent. dvh tracks the actual current viewport; vh above is the
-       fallback for browsers without dvh support. */
     height: 100dvh;
     max-height: 100dvh;
     border-radius: 0;
@@ -159,7 +154,8 @@
   }
   .post-viewer-media {
     flex: none;
-    height: 45vh;
+    height: 40vh;
+    max-height: 40dvh;
   }
   .post-viewer-side {
     max-width: 100%;
@@ -167,8 +163,12 @@
     border-left: none;
     border-top: 1px solid var(--border-glass);
     flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    gap: 10px;
   }
   .post-viewer-nav {
     display: none;
   }
 }
+

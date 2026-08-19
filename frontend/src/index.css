@@ -386,25 +386,21 @@ button, input, textarea {
   min-width: 0;
 }
 
-@media (max-width: 1200px) {
-  .app-container {
-    grid-template-columns: 80px 1fr 300px;
-    padding: 16px;
-    gap: 16px;
-  }
-}
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .app-container {
     grid-template-columns: 80px 1fr;
+    padding: 16px;
+    gap: 16px;
   }
   .app-container .right-sidebar {
     display: none;
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .app-container {
     grid-template-columns: 1fr;
-    padding: 10px;
-    padding-bottom: 80px; /* for mobile tab-bar */
+    padding: 12px;
+    padding-bottom: 84px; /* for mobile bottom tab-bar */
   }
 }
+

@@ -7,6 +7,7 @@ import {
   unfollowUser,
   searchUsers,
   getSuggestedUsers,
+  deleteUserAccount,
 } from '../controllers/userController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
@@ -17,7 +18,9 @@ router.use(protect); // Secure all user routes
 
 router.get('/search', searchUsers);
 router.get('/suggestions', getSuggestedUsers);
+router.delete('/account', deleteUserAccount);
 router.get('/profile/:username', getUserProfile);
+
 router.get('/:id', getUserById);
 
 router.put(

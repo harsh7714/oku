@@ -148,7 +148,7 @@
 }
 
 /* Responsive Overrides */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .sidebar {
     padding: 16px 8px;
     align-items: center;
@@ -180,7 +180,8 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+
   /* Doubled up as .sidebar.glass rather than .sidebar alone — the JSX keeps
      the shared `glass` class for the desktop rail's look, so this needs
      higher specificity than plain `.glass` (defined in index.css, whose
