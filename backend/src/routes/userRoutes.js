@@ -11,6 +11,7 @@ import {
 } from '../controllers/userController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
+import { checkMediaExplicit } from '../middleware/checkMediaExplicit.js';
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.put(
     { name: 'coverPicture', maxCount: 1 },
   ]),
   verifyFileContents,
+  checkMediaExplicit,
   updateUserProfile
 );
 

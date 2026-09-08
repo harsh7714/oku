@@ -10,7 +10,9 @@ import {
 } from '../controllers/messageController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
+import { checkMediaExplicit } from '../middleware/checkMediaExplicit.js';
 import { validate } from '../middleware/validate.js';
+import { containsExplicitWord } from '../utils/explicitFilter.js';
 
 const router = express.Router();
 
@@ -21,12 +23,19 @@ router.post(
   '/',
   upload.single('media'),
   verifyFileContents,
+  checkMediaExplicit,
   validate([
     body('receiverId').notEmpty().withMessage('Receiver is required'),
     body('content')
       .optional({ checkFalsy: true })
       .isLength({ max: 2000 })
-      .withMessage('Message cannot exceed 2000 characters'),
+      .withMessage('Message cannot exceed 2000 characters')
+      .custom((value) => {
+        if (value && containsExplicitWord(value)) {
+          throw new Error('Message contains inappropriate or explicit content (English/Hindi).');
+        }
+        return true;
+      }),
   ]),
   sendMessage
 );

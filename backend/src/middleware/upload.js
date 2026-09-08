@@ -2,14 +2,26 @@ import multer from 'multer';
 import path from 'path';
 import FileType from 'file-type';
 
-const ALLOWED_EXTENSIONS = /jpg|jpeg|png|webp|mp4|mov|avi/;
+const ALLOWED_EXTENSIONS = /jpg|jpeg|png|webp|gif|mp4|mov|avi|webm|mp3|wav|ogg|m4a|aac/;
 const ALLOWED_MIMES = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',
+  'image/gif',
   'video/mp4',
   'video/quicktime',
   'video/x-msvideo',
+  'video/webm',
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/ogg',
+  'audio/m4a',
+  'audio/x-m4a',
+  'audio/aac',
+  'audio/webm',
+  'audio/mp4',
 ]);
 
 function checkFileType(file, cb) {
@@ -19,7 +31,7 @@ function checkFileType(file, cb) {
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error('Images and videos only are allowed!'));
+    cb(new Error('Images, videos, and audio files only are allowed!'));
   }
 }
 
@@ -46,7 +58,7 @@ export async function verifyFileContents(req, res, next) {
     for (const file of files) {
       const detected = await FileType.fromBuffer(file.buffer);
       if (!detected || !ALLOWED_MIMES.has(detected.mime)) {
-        return res.status(400).json({ message: 'File content does not match a supported image or video format' });
+        return res.status(400).json({ message: 'File content does not match a supported image, video, or audio format' });
       }
     }
 

@@ -112,3 +112,46 @@
   padding: 14px;
   font-size: 1.05rem;
 }
+
+.input-with-icon.has-error .form-input {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+
+.input-with-icon.has-error .input-icon {
+  color: #ef4444;
+}
+
+.input-warning-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.825rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.btn-loading-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+

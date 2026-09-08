@@ -16,7 +16,9 @@ import {
 } from '../controllers/commentController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
+import { checkMediaExplicit } from '../middleware/checkMediaExplicit.js';
 import { validate } from '../middleware/validate.js';
+import { containsExplicitWord } from '../utils/explicitFilter.js';
 
 const router = express.Router();
 
@@ -33,11 +35,18 @@ router.post(
   '/',
   upload.single('media'),
   verifyFileContents,
+  checkMediaExplicit,
   validate([
     body('content')
       .optional({ checkFalsy: true })
       .isLength({ max: 2000 })
-      .withMessage('Post content cannot exceed 2000 characters'),
+      .withMessage('Post content cannot exceed 2000 characters')
+      .custom((value) => {
+        if (value && containsExplicitWord(value)) {
+          throw new Error('Post content contains inappropriate or explicit language (English/Hindi).');
+        }
+        return true;
+      }),
   ]),
   createPost
 );
@@ -53,7 +62,13 @@ router.post(
       .notEmpty()
       .withMessage('Comment content is required')
       .isLength({ max: 500 })
-      .withMessage('Comment content cannot exceed 500 characters'),
+      .withMessage('Comment content cannot exceed 500 characters')
+      .custom((value) => {
+        if (value && containsExplicitWord(value)) {
+          throw new Error('Comment contains inappropriate or explicit language (English/Hindi).');
+        }
+        return true;
+      }),
   ]),
   addComment
 );
