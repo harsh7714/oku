@@ -16,7 +16,6 @@ import {
 } from '../controllers/commentController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
-import { checkMediaExplicit } from '../middleware/checkMediaExplicit.js';
 import { validate } from '../middleware/validate.js';
 import { containsExplicitWord } from '../utils/explicitFilter.js';
 
@@ -35,7 +34,6 @@ router.post(
   '/',
   upload.single('media'),
   verifyFileContents,
-  checkMediaExplicit,
   validate([
     body('content')
       .optional({ checkFalsy: true })
