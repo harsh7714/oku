@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { SERVER_URL } from '../utils/serverUrl';
 
 const SocketContext = createContext();
-
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
@@ -16,7 +15,10 @@ export const SocketProvider = ({ children }) => {
     let newSocket;
 
     if (userId) {
-      newSocket = io(SOCKET_URL);
+      newSocket = io(SERVER_URL, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+      });
       setSocket(newSocket);
 
       newSocket.on('connect', () => {
@@ -31,6 +33,10 @@ export const SocketProvider = ({ children }) => {
       // Handle reconnect
       newSocket.on('reconnect', () => {
         newSocket.emit('setup', userId);
+      });
+
+      newSocket.on('connect_error', (error) => {
+        console.error('Socket connection failed:', error.message);
       });
     }
 

@@ -123,9 +123,13 @@ routing on refresh/deep links).
 
 1. Connect the repo to Netlify — it will pick up `netlify.toml` automatically.
 2. In Site settings → Environment variables, set `VITE_API_URL` to your deployed backend's URL
-   (e.g. `https://your-backend-host.example.com`, no trailing slash, no `/api` suffix).
+   (e.g. `https://your-backend-host.example.com`). The app accepts either this origin or the
+   same URL with `/api` appended.
 3. Deploy. The backend must be reachable from the public internet (its CORS is already open via
    `origin: '*'`) — a local `http://localhost:5000` backend will not work from a Netlify-hosted site.
+4. Set `VITE_TURN_URL`, `VITE_TURN_USERNAME`, and `VITE_TURN_CREDENTIAL` in Netlify using a TURN
+   provider. Render's free web service can relay Socket.IO signaling, but it is not a TURN server;
+   without TURN, calls can fail when the two browsers cannot establish a direct peer connection.
 
 ## Scripts
 
