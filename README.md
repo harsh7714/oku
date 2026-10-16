@@ -16,6 +16,7 @@ Oku is a full-stack real-time social media application — a feed, profiles, fol
 - Follow / unfollow, followers & following lists, suggested users, user search
 - Profiles with editable bio, avatar, cover photo, and **Delete Account** option (with cascade cleanup of posts, media, comments, messages, notifications)
 - Real-time direct messaging with typing indicators, read receipts, and online presence
+- One-to-one WebRTC voice and video calls from direct-message conversations, with Socket.IO signaling, mute/camera controls, and call timeout handling
 - Real-time notifications (Socket.IO) and browser **Web Push notifications** (VAPID)
 - Fully responsive UX across Desktop, Tablet (768px – 1024px), and Mobile (< 768px) with bottom tab navigation
 - Toast notifications for user-facing feedback, with themed in-app confirmation dialogs for destructive actions
@@ -92,6 +93,28 @@ npm run dev
 The app runs on `http://localhost:5173`. It reads the backend's base URL from `VITE_API_URL`
 (set in `frontend/.env`); if unset, it falls back to `http://localhost:5000` for local dev.
 
+WebRTC calls work on `localhost` during development and require HTTPS in production. The app
+uses Google STUN servers by default. For reliable calls across restrictive NATs/firewalls, set
+these optional frontend environment variables to credentials from a TURN provider (or your own
+coturn server):
+
+```
+VITE_TURN_URL=turn:turn.example.com:3478,turns:turn.example.com:5349
+VITE_TURN_USERNAME=<turn username>
+VITE_TURN_CREDENTIAL=<turn credential>
+```
+
+### Using voice and video calls
+
+1. Open a direct-message conversation with another user.
+2. Select the phone icon for a voice call or the camera icon for a video call.
+3. The recipient can accept or decline the incoming call.
+4. During a call, use the controls to mute the microphone, disable the camera, or end the call.
+
+Both users must grant microphone/camera access when prompted. The recipient must be online because
+Socket.IO is used to exchange the WebRTC offer, answer, and ICE candidates. If the recipient is
+offline or does not answer within 30 seconds, the call ends automatically.
+
 ## Deploying the frontend to Netlify
 
 The repo root has a `netlify.toml` that points Netlify at the `frontend/` folder, builds it with
@@ -128,4 +151,7 @@ All endpoints are mounted under `/api` and (aside from `auth/register` and `auth
 | `/api/push` | VAPID public key lookup, push subscription & unsubscription |
 
 Real-time events (likes/comments/follows/messages/typing/presence) are delivered over Socket.IO alongside the REST API.
+WebRTC signaling uses `callUser`, `answerCall`, `iceCandidate`, `rejectCall`, and `endCall`; the
+backend relays signaling only, while audio/video stays peer-to-peer or uses the configured TURN
+relay.
 

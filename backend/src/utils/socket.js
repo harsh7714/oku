@@ -41,6 +41,10 @@ const initSocket = (server) => {
     // 'setup'); media itself flows peer-to-peer once connected.
     socket.on('callUser', ({ to, offer, callType, caller }) => {
       if (!to) return;
+      if (!io.sockets.adapter.rooms.has(String(to))) {
+        socket.emit('callUnavailable', { to });
+        return;
+      }
       io.to(to).emit('incomingCall', { from: socket.userId, offer, callType, caller });
     });
 

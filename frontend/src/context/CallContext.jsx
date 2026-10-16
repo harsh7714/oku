@@ -17,15 +17,16 @@ const CallContext = createContext();
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'stun:openrelay.metered.ca:80' },
-  { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-  {
-    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-    username: 'openrelayproject',
-    credential: 'openrelayproject',
-  },
+  ...(import.meta.env.VITE_TURN_URL && import.meta.env.VITE_TURN_USERNAME && import.meta.env.VITE_TURN_CREDENTIAL
+    ? [{
+        urls: import.meta.env.VITE_TURN_URL.split(',').map((url) => url.trim()),
+        username: import.meta.env.VITE_TURN_USERNAME,
+        credential: import.meta.env.VITE_TURN_CREDENTIAL,
+      }]
+    : []),
 ];
+
+const RING_TIMEOUT_MS = 30_000;
 
 export const CallProvider = ({ children }) => {
   const { user } = useAuth();
@@ -52,12 +53,17 @@ export const CallProvider = ({ children }) => {
   const remoteUserIdRef = useRef(null);
   const pendingCandidatesRef = useRef([]);
   const callStatusRef = useRef('idle');
+  const ringTimeoutRef = useRef(null);
 
   useEffect(() => {
     callStatusRef.current = callStatus;
   }, [callStatus]);
 
   const cleanup = useCallback(() => {
+    if (ringTimeoutRef.current) {
+      clearTimeout(ringTimeoutRef.current);
+      ringTimeoutRef.current = null;
+    }
     if (pcRef.current) {
       pcRef.current.close();
       pcRef.current = null;
@@ -204,6 +210,24 @@ export const CallProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, incomingCall, cleanup]);
 
+  useEffect(() => {
+    if (callStatus !== 'calling' && callStatus !== 'ringing') return undefined;
+
+    ringTimeoutRef.current = setTimeout(() => {
+      if (callStatusRef.current === 'calling' || callStatusRef.current === 'ringing') {
+        toast.info('Call timed out');
+        endCall();
+      }
+    }, RING_TIMEOUT_MS);
+
+    return () => {
+      if (ringTimeoutRef.current) {
+        clearTimeout(ringTimeoutRef.current);
+        ringTimeoutRef.current = null;
+      }
+    };
+  }, [callStatus, endCall, toast]);
+
   const toggleMute = () => {
     localStreamRef.current?.getAudioTracks().forEach((t) => {
       t.enabled = isMuted;
@@ -263,24 +287,42 @@ export const CallProvider = ({ children }) => {
       cleanup();
     };
 
+    const handleCallUnavailable = () => {
+      toast.info('That user is unavailable');
+      cleanup();
+    };
+
     const handleCallEnded = () => {
       cleanup();
+    };
+
+    const handleSocketDisconnect = () => {
+      if (callStatusRef.current !== 'idle') {
+        toast.info('Call ended because the connection was lost');
+        cleanup();
+      }
     };
 
     socket.on('incomingCall', handleIncomingCall);
     socket.on('callAnswered', handleCallAnswered);
     socket.on('iceCandidate', handleIceCandidate);
     socket.on('callRejected', handleCallRejected);
+    socket.on('callUnavailable', handleCallUnavailable);
     socket.on('callEnded', handleCallEnded);
+    socket.on('disconnect', handleSocketDisconnect);
 
     return () => {
       socket.off('incomingCall', handleIncomingCall);
       socket.off('callAnswered', handleCallAnswered);
       socket.off('iceCandidate', handleIceCandidate);
       socket.off('callRejected', handleCallRejected);
+      socket.off('callUnavailable', handleCallUnavailable);
       socket.off('callEnded', handleCallEnded);
+      socket.off('disconnect', handleSocketDisconnect);
     };
   }, [socket, toast, cleanup]);
+
+  useEffect(() => () => cleanup(), [cleanup]);
 
   return (
     <CallContext.Provider
