@@ -7,6 +7,7 @@ import {
   deleteMessage,
   deleteConversation,
   reactToMessage,
+  createCallLog,
 } from '../controllers/messageController.js';
 import { protect } from '../middleware/auth.js';
 import upload, { verifyFileContents } from '../middleware/upload.js';
@@ -18,6 +19,7 @@ const router = express.Router();
 router.use(protect); // Secure all message routes
 
 router.get('/conversations/list', getConversations);
+router.post('/call-log', createCallLog);
 router.post(
   '/',
   upload.single('media'),

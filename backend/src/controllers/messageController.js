@@ -108,6 +108,41 @@ export const sendMessage = async (req, res) => {
   }
 };
 
+// @desc    Add a voice/video call event to the conversation history
+// @route   POST /api/messages/call-log
+// @access  Private
+export const createCallLog = async (req, res) => {
+  try {
+    const { receiverId, callType, callStatus, duration = 0 } = req.body;
+    if (!receiverId || !['audio', 'video'].includes(callType)) {
+      return res.status(400).json({ message: 'Receiver and call type are required' });
+    }
+    if (!['completed', 'declined', 'missed', 'canceled'].includes(callStatus)) {
+      return res.status(400).json({ message: 'Invalid call status' });
+    }
+
+    const message = await Message.create({
+      senderId: req.user._id,
+      receiverId,
+      messageType: 'call',
+      callType,
+      callStatus,
+      callDuration: Math.max(0, Number(duration) || 0),
+    });
+    const populatedMessage = await Message.findById(message._id).populate(MESSAGE_POPULATE);
+
+    if (global.io) {
+      global.io.to(String(req.user._id)).emit('receiveCallLog', populatedMessage);
+      global.io.to(String(receiverId)).emit('receiveCallLog', populatedMessage);
+    }
+
+    return res.status(201).json(populatedMessage);
+  } catch (error) {
+    console.error('createCallLog Error:', error);
+    return res.status(500).json({ message: 'Server error creating call history' });
+  }
+};
+
 // @desc    Add, change, or remove your reaction on a message. Sending the
 //          same emoji you already reacted with removes it; a different
 //          emoji replaces it — one reaction per user per message.
@@ -286,6 +321,10 @@ export const getConversations = async (req, res) => {
           lastMessage: {
             content: msg.content,
             mediaType: msg.mediaType,
+            messageType: msg.messageType,
+            callType: msg.callType,
+            callStatus: msg.callStatus,
+            callDuration: msg.callDuration,
             sharedPost: !!msg.sharedPost,
             createdAt: msg.createdAt,
             senderId: msg.senderId._id,

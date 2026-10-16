@@ -18,6 +18,26 @@ const messageSchema = new mongoose.Schema(
       maxlength: [2000, 'Message cannot exceed 2000 characters'],
       default: '',
     },
+    messageType: {
+      type: String,
+      enum: ['chat', 'call'],
+      default: 'chat',
+    },
+    callType: {
+      type: String,
+      enum: ['audio', 'video', null],
+      default: null,
+    },
+    callStatus: {
+      type: String,
+      enum: ['completed', 'declined', 'missed', 'canceled', null],
+      default: null,
+    },
+    callDuration: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
     media: {
       type: String,
       default: '',

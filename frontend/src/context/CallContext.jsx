@@ -49,6 +49,8 @@ export const CallProvider = ({ children }) => {
   const pendingCandidatesRef = useRef([]);
   const callStatusRef = useRef('idle');
   const ringTimeoutRef = useRef(null);
+  const callStartedAtRef = useRef(null);
+  const callLoggedRef = useRef(false);
 
   useEffect(() => {
     callStatusRef.current = callStatus;
@@ -67,6 +69,8 @@ export const CallProvider = ({ children }) => {
     localStreamRef.current = null;
     remoteStreamRef.current = null;
     remoteUserIdRef.current = null;
+    callStartedAtRef.current = null;
+    callLoggedRef.current = false;
     pendingCandidatesRef.current = [];
     setLocalStream(null);
     setRemoteStream(null);
@@ -205,6 +209,7 @@ export const CallProvider = ({ children }) => {
 
       socket.emit('answerCall', { to: from, answer });
 
+      callStartedAtRef.current = Date.now();
       setIncomingCall(null);
       setCallStatus('connected');
     } catch (err) {
@@ -220,21 +225,44 @@ export const CallProvider = ({ children }) => {
   };
 
   const declineCall = () => {
+    const declinedCall = incomingCall;
     if (incomingCall && socket) {
       socket.emit('rejectCall', { to: incomingCall.from });
     }
-    setIncomingCall(null);
-    setCallStatus('idle');
+    if (declinedCall) {
+      logCall(declinedCall.from, declinedCall.callType, 'declined');
+    }
+    cleanup();
   };
 
-  const endCall = useCallback(() => {
+  const logCall = useCallback(async (receiverId, type, status) => {
+    if (!receiverId || !type || callLoggedRef.current) return;
+    callLoggedRef.current = true;
+    const duration = callStartedAtRef.current
+      ? Math.max(0, Math.round((Date.now() - callStartedAtRef.current) / 1000))
+      : 0;
+    try {
+      await api.post('/messages/call-log', {
+        receiverId,
+        callType: type,
+        callStatus: status,
+        duration,
+      });
+    } catch (error) {
+      console.error('Could not save call history:', error);
+    }
+  }, []);
+
+  const endCall = useCallback((statusOverride) => {
     const target = remoteUserIdRef.current || incomingCall?.from;
+    const status = statusOverride || (callStartedAtRef.current ? 'completed' : 'canceled');
     if (target && socket) {
       socket.emit('endCall', { to: target });
     }
+    if (target) logCall(target, callType, status);
     cleanup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, incomingCall, cleanup]);
+  }, [socket, incomingCall, callType, cleanup, logCall]);
 
   useEffect(() => {
     if (callStatus !== 'calling' && callStatus !== 'ringing') return undefined;
@@ -291,6 +319,7 @@ export const CallProvider = ({ children }) => {
         await pc.addIceCandidate(new RTCIceCandidate(candidate));
       }
       pendingCandidatesRef.current = [];
+      callStartedAtRef.current = Date.now();
       setCallStatus('connected');
     };
 
@@ -315,6 +344,7 @@ export const CallProvider = ({ children }) => {
 
     const handleCallUnavailable = () => {
       toast.info('That user is unavailable');
+      logCall(remoteUserIdRef.current, callType, 'missed');
       cleanup();
     };
 
@@ -346,7 +376,7 @@ export const CallProvider = ({ children }) => {
       socket.off('callEnded', handleCallEnded);
       socket.off('disconnect', handleSocketDisconnect);
     };
-  }, [socket, toast, cleanup]);
+  }, [socket, toast, cleanup, logCall, callType]);
 
   useEffect(() => () => cleanup(), [cleanup]);
 

@@ -19,6 +19,11 @@ const roomFor = (idA, idB) => [idA, idB].sort().join('_');
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
 const lastMessagePreview = (lastMessage) => {
+  if (lastMessage.messageType === 'call' || lastMessage.callType) {
+    const kind = lastMessage.callType === 'video' ? 'Video' : 'Voice';
+    const status = lastMessage.callStatus === 'completed' ? 'call' : lastMessage.callStatus;
+    return `${lastMessage.callType === 'video' ? '📹' : '📞'} ${kind} ${status}`;
+  }
   if (lastMessage.sharedPost) return '🔗 Shared a post';
   if (lastMessage.content) return lastMessage.content;
   if (lastMessage.mediaType === 'video') return '🎥 Video';
@@ -33,6 +38,18 @@ const replyPreviewText = (msg) => {
   if (msg.mediaType === 'video') return '🎥 Video';
   if (msg.mediaType === 'image') return '📷 Photo';
   return '';
+};
+
+const callStatusLabel = (status) => {
+  if (status === 'completed') return 'Completed';
+  if (status === 'declined') return 'Declined';
+  if (status === 'missed') return 'Missed';
+  return 'Canceled';
+};
+
+const formatCallDuration = (seconds) => {
+  const value = Number(seconds) || 0;
+  return `${Math.floor(value / 60).toString().padStart(2, '0')}:${(value % 60).toString().padStart(2, '0')}`;
 };
 
 // Collapses a flat reactions[{userId, emoji}] array into { emoji: [userId, ...] }
@@ -236,6 +253,40 @@ const MessagesPage = ({ onOpen }) => {
       });
     };
 
+    const handleCallLog = (msg) => {
+      const senderId = msg.senderId._id;
+      const partner = String(senderId) === String(user._id) ? msg.receiverId : msg.senderId;
+      const partnerId = partner._id;
+      const isOpen = activePartnerRef.current?._id === partnerId;
+
+      if (isOpen) {
+        setMessages((prev) => (prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]));
+      }
+
+      setConversations((prev) => {
+        const existingIndex = prev.findIndex((c) => c.user._id === partnerId);
+        const updatedEntry = {
+          user: partner,
+          lastMessage: {
+            content: msg.content,
+            mediaType: msg.mediaType,
+            messageType: msg.messageType,
+            callType: msg.callType,
+            callStatus: msg.callStatus,
+            callDuration: msg.callDuration,
+            sharedPost: false,
+            createdAt: msg.createdAt,
+            senderId,
+            isRead: isOpen || String(senderId) === String(user._id),
+          },
+        };
+        if (existingIndex === -1) return [updatedEntry, ...prev];
+        const next = [...prev];
+        next.splice(existingIndex, 1);
+        return [updatedEntry, ...next];
+      });
+    };
+
     const handleTyping = (room) => {
       const partner = activePartnerRef.current;
       if (partner && room === roomFor(user._id, partner._id)) {
@@ -267,6 +318,7 @@ const MessagesPage = ({ onOpen }) => {
     };
 
     socket.on('receiveMessage', handleReceive);
+    socket.on('receiveCallLog', handleCallLog);
     socket.on('typing', handleTyping);
     socket.on('stopTyping', handleStopTyping);
     socket.on('messageDeleted', handleDeleted);
@@ -275,6 +327,7 @@ const MessagesPage = ({ onOpen }) => {
 
     return () => {
       socket.off('receiveMessage', handleReceive);
+      socket.off('receiveCallLog', handleCallLog);
       socket.off('typing', handleTyping);
       socket.off('stopTyping', handleStopTyping);
       socket.off('messageDeleted', handleDeleted);
@@ -663,6 +716,21 @@ const MessagesPage = ({ onOpen }) => {
                                 {m.replyTo.senderId?.username || 'a deleted message'}
                               </span>
                               <span className="chat-reply-quote-text">{replyPreviewText(m.replyTo)}</span>
+                            </div>
+                          )}
+
+                          {m.messageType === 'call' && (
+                            <div className="chat-call-event">
+                              <span className="chat-call-event-icon">
+                                {m.callType === 'video' ? <Video size={20} /> : <Phone size={20} />}
+                              </span>
+                              <span className="chat-call-event-details">
+                                <strong>{m.callType === 'video' ? 'Video call' : 'Voice call'}</strong>
+                                <span>
+                                  {callStatusLabel(m.callStatus)}
+                                  {m.callStatus === 'completed' && ` · ${formatCallDuration(m.callDuration)}`}
+                                </span>
+                              </span>
                             </div>
                           )}
 
