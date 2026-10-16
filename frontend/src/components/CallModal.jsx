@@ -43,7 +43,7 @@ const CallModal = ({
     if (!localVideoRef.current) return;
     localVideoRef.current.srcObject = localStream || null;
     if (localStream) startPlayback(localVideoRef.current);
-  }, [localStream]);
+  }, [localStream, callStatus]);
 
   useEffect(() => {
     if (remoteVideoRef.current) {
@@ -54,7 +54,7 @@ const CallModal = ({
       remoteAudioRef.current.srcObject = remoteStream || null;
       if (remoteStream) startPlayback(remoteAudioRef.current);
     }
-  }, [remoteStream]);
+  }, [remoteStream, callStatus]);
 
   useEffect(() => {
     if (callStatus !== 'connected') {
