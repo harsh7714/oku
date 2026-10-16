@@ -44,6 +44,7 @@ export const CallProvider = ({ children }) => {
   // exist purely to drive the CallModal UI.
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
+  const remoteStreamRef = useRef(null);
   const remoteUserIdRef = useRef(null);
   const pendingCandidatesRef = useRef([]);
   const callStatusRef = useRef('idle');
@@ -64,6 +65,7 @@ export const CallProvider = ({ children }) => {
     }
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
+    remoteStreamRef.current = null;
     remoteUserIdRef.current = null;
     pendingCandidatesRef.current = [];
     setLocalStream(null);
@@ -86,7 +88,14 @@ export const CallProvider = ({ children }) => {
       };
 
       pc.ontrack = (event) => {
-        setRemoteStream(event.streams[0]);
+        // Some browsers do not populate event.streams even though the track
+        // is valid. Keep one stream and add both audio/video tracks to it.
+        const stream = event.streams?.[0] || remoteStreamRef.current || new MediaStream();
+        if (!stream.getTracks().some((track) => track.id === event.track.id)) {
+          stream.addTrack(event.track);
+        }
+        remoteStreamRef.current = stream;
+        setRemoteStream(stream);
       };
 
       // Only 'failed' is treated as a definitive end — 'disconnected' is

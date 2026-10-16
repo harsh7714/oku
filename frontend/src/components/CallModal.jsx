@@ -11,6 +11,14 @@ const formatDuration = (totalSeconds) => {
   return `${m}:${s}`;
 };
 
+const startPlayback = (element) => {
+  if (!element) return;
+  const playback = element.play();
+  playback?.catch((error) => {
+    console.warn('Remote media autoplay was blocked:', error.message);
+  });
+};
+
 const CallModal = ({
   callStatus,
   callType,
@@ -32,12 +40,20 @@ const CallModal = ({
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    if (localVideoRef.current) localVideoRef.current.srcObject = localStream || null;
+    if (!localVideoRef.current) return;
+    localVideoRef.current.srcObject = localStream || null;
+    if (localStream) startPlayback(localVideoRef.current);
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream || null;
-    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream || null;
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = remoteStream || null;
+      if (remoteStream) startPlayback(remoteVideoRef.current);
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = remoteStream || null;
+      if (remoteStream) startPlayback(remoteAudioRef.current);
+    }
   }, [remoteStream]);
 
   useEffect(() => {
@@ -61,7 +77,13 @@ const CallModal = ({
         <div className="call-active">
           {activeCallType === 'video' ? (
             <>
-              <video ref={remoteVideoRef} className="call-remote-video" autoPlay playsInline />
+              <video
+                ref={remoteVideoRef}
+                className="call-remote-video"
+                autoPlay
+                playsInline
+                onLoadedMetadata={(event) => startPlayback(event.currentTarget)}
+              />
               <video ref={localVideoRef} className="call-local-video" autoPlay playsInline muted />
               {isCameraOff && (
                 <div className="call-local-video-off">
@@ -71,7 +93,11 @@ const CallModal = ({
             </>
           ) : (
             <>
-              <audio ref={remoteAudioRef} autoPlay />
+              <audio
+                ref={remoteAudioRef}
+                autoPlay
+                onLoadedMetadata={(event) => startPlayback(event.currentTarget)}
+              />
               <div className="call-audio-avatar">
                 <img src={getAvatarUrl(displayUser)} alt="" width="120" height="120" />
               </div>
