@@ -51,9 +51,59 @@ export const CallProvider = ({ children }) => {
   const ringTimeoutRef = useRef(null);
   const callStartedAtRef = useRef(null);
   const callLoggedRef = useRef(false);
+  const ringtoneContextRef = useRef(null);
+  const ringtoneTimerRef = useRef(null);
 
   useEffect(() => {
     callStatusRef.current = callStatus;
+  }, [callStatus]);
+
+  // Generate a lightweight two-tone ringtone locally so calls do not depend
+  // on an external audio asset. Browsers may suppress incoming-call audio
+  // until the user has interacted with the site, but outgoing calls begin
+  // from a button gesture and can play immediately.
+  useEffect(() => {
+    if (callStatus !== 'calling' && callStatus !== 'ringing') return undefined;
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return undefined;
+
+    const context = new AudioContext();
+    ringtoneContextRef.current = context;
+    context.resume().catch(() => {});
+
+    const playBurst = () => {
+      if (context.state === 'closed') return;
+      const now = context.currentTime;
+      [660, 880].forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const start = now + index * 0.22;
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.16, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.2);
+      });
+    };
+
+    playBurst();
+    ringtoneTimerRef.current = setInterval(playBurst, 2200);
+
+    return () => {
+      if (ringtoneTimerRef.current) {
+        clearInterval(ringtoneTimerRef.current);
+        ringtoneTimerRef.current = null;
+      }
+      if (ringtoneContextRef.current && ringtoneContextRef.current.state !== 'closed') {
+        ringtoneContextRef.current.close();
+      }
+      ringtoneContextRef.current = null;
+    };
   }, [callStatus]);
 
   const cleanup = useCallback(() => {
