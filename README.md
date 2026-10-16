@@ -78,6 +78,16 @@ METERED_DOMAIN=<your-app>.metered.live
 METERED_API_KEY=<credential-specific Metered API key>
 ```
 
+If you do not have a credential-specific Metered API key, use the ICE server array from
+Metered's **Get credential → Show ICE Servers Array** panel instead. Put the TURN URLs in one
+comma-separated Render variable and keep the username/password on Render:
+
+```
+METERED_TURN_URLS=turn:global.relay.metered.ca:80,turn:global.relay.metered.ca:80?transport=tcp,turn:global.relay.metered.ca:443,turns:global.relay.metered.ca:443?transport=tcp
+METERED_TURN_USERNAME=<TURN username>
+METERED_TURN_CREDENTIAL=<TURN password>
+```
+
 > Set `USE_MEMORY_DB=true` to skip MongoDB entirely and run against a throwaway in-memory database for local development.
 
 ```bash

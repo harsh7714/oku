@@ -87,6 +87,10 @@ export const CallProvider = ({ children }) => {
         }
       };
 
+      pc.onicecandidateerror = (event) => {
+        console.warn('WebRTC ICE candidate error:', event.errorCode, event.errorText);
+      };
+
       pc.ontrack = (event) => {
         // Some browsers do not populate event.streams even though the track
         // is valid. Keep one stream and add both audio/video tracks to it.
@@ -102,10 +106,15 @@ export const CallProvider = ({ children }) => {
       // often a transient ICE blip that recovers on its own, and 'closed'
       // is just the echo of calling cleanup() ourselves.
       pc.onconnectionstatechange = () => {
+        console.log('WebRTC connection state:', pc.connectionState);
         if (pc.connectionState === 'failed') {
           toast.error('Call connection failed');
           cleanup();
         }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log('WebRTC ICE state:', pc.iceConnectionState);
       };
 
       pcRef.current = pc;

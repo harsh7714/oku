@@ -1,5 +1,15 @@
 const getTurnIceServers = async (req, res) => {
-  const { METERED_DOMAIN, METERED_API_KEY } = process.env;
+  const { METERED_DOMAIN, METERED_API_KEY, METERED_TURN_URLS, METERED_TURN_USERNAME, METERED_TURN_CREDENTIAL } = process.env;
+
+  // The API-key flow is preferred because Metered can rotate credentials.
+  // The direct flow is useful when the dashboard only provides the copied
+  // ICE server array (and keeps those values on Render, never in Netlify).
+  if (!METERED_API_KEY && METERED_TURN_URLS && METERED_TURN_USERNAME && METERED_TURN_CREDENTIAL) {
+    const urls = METERED_TURN_URLS.split(',').map((url) => url.trim()).filter(Boolean);
+    return res.json({
+      iceServers: [{ urls, username: METERED_TURN_USERNAME, credential: METERED_TURN_CREDENTIAL }],
+    });
+  }
 
   if (!METERED_DOMAIN || !METERED_API_KEY) {
     return res.status(503).json({ message: 'TURN service is not configured' });
