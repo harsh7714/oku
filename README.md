@@ -72,6 +72,10 @@ AWS_REGION=<your S3 bucket region>
 AWS_ACCESS_KEY_ID=<your AWS access key>
 AWS_SECRET_ACCESS_KEY=<your AWS secret key>
 AWS_S3_BUCKET_NAME=<your S3 bucket name>
+
+# TURN provider (keep these on the backend; never add them as VITE_* variables)
+METERED_DOMAIN=<your-app>.metered.live
+METERED_API_KEY=<credential-specific Metered API key>
 ```
 
 > Set `USE_MEMORY_DB=true` to skip MongoDB entirely and run against a throwaway in-memory database for local development.
@@ -94,15 +98,9 @@ The app runs on `http://localhost:5173`. It reads the backend's base URL from `V
 (set in `frontend/.env`); if unset, it falls back to `http://localhost:5000` for local dev.
 
 WebRTC calls work on `localhost` during development and require HTTPS in production. The app
-uses Google STUN servers by default. For reliable calls across restrictive NATs/firewalls, set
-these optional frontend environment variables to credentials from a TURN provider (or your own
-coturn server):
-
-```
-VITE_TURN_URL=turn:turn.example.com:3478,turns:turn.example.com:5349
-VITE_TURN_USERNAME=<turn username>
-VITE_TURN_CREDENTIAL=<turn credential>
-```
+uses Google STUN servers by default and requests TURN ICE server credentials from the authenticated
+backend when available. Configure `METERED_DOMAIN` and `METERED_API_KEY` on Render, not in the
+frontend. This keeps the TURN provider key out of the Netlify build output.
 
 ### Using voice and video calls
 
@@ -127,9 +125,9 @@ routing on refresh/deep links).
    same URL with `/api` appended.
 3. Deploy. The backend must be reachable from the public internet (its CORS is already open via
    `origin: '*'`) — a local `http://localhost:5000` backend will not work from a Netlify-hosted site.
-4. Set `VITE_TURN_URL`, `VITE_TURN_USERNAME`, and `VITE_TURN_CREDENTIAL` in Netlify using a TURN
-   provider. Render's free web service can relay Socket.IO signaling, but it is not a TURN server;
-   without TURN, calls can fail when the two browsers cannot establish a direct peer connection.
+4. Configure `METERED_DOMAIN` and `METERED_API_KEY` on Render using a TURN provider. Render's
+   free web service can relay Socket.IO signaling, but it is not a TURN server; without TURN,
+   calls can fail when the two browsers cannot establish a direct peer connection.
 
 ## Scripts
 

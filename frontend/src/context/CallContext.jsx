@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
 import { useToast } from './ToastContext';
 import CallModal from '../components/CallModal';
+import api from '../services/api';
 
 const CallContext = createContext();
 
@@ -17,13 +18,6 @@ const CallContext = createContext();
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
-  ...(import.meta.env.VITE_TURN_URL && import.meta.env.VITE_TURN_USERNAME && import.meta.env.VITE_TURN_CREDENTIAL
-    ? [{
-        urls: import.meta.env.VITE_TURN_URL.split(',').map((url) => url.trim()),
-        username: import.meta.env.VITE_TURN_USERNAME,
-        credential: import.meta.env.VITE_TURN_CREDENTIAL,
-      }]
-    : []),
 ];
 
 const RING_TIMEOUT_MS = 30_000;
@@ -82,8 +76,8 @@ export const CallProvider = ({ children }) => {
   }, []);
 
   const createPeerConnection = useCallback(
-    (targetUserId) => {
-      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    (targetUserId, iceServers = ICE_SERVERS) => {
+      const pc = new RTCPeerConnection({ iceServers });
 
       pc.onicecandidate = (event) => {
         if (event.candidate) {
@@ -121,16 +115,30 @@ export const CallProvider = ({ children }) => {
     return stream;
   };
 
+  const getIceServers = async () => {
+    try {
+      const { data } = await api.get('/turn/ice-servers');
+      return [...ICE_SERVERS, ...(Array.isArray(data.iceServers) ? data.iceServers : [])];
+    } catch (error) {
+      // TURN is a fallback. Calls can still work peer-to-peer using STUN.
+      console.warn(
+        'TURN configuration unavailable; using STUN only',
+        error.response?.data?.message || error.message
+      );
+      return ICE_SERVERS;
+    }
+  };
+
   const startCall = async (partner, type) => {
     if (!socket || !user || callStatusRef.current !== 'idle') return;
 
     try {
-      const stream = await getMedia(type);
+      const [stream, iceServers] = await Promise.all([getMedia(type), getIceServers()]);
       setRemoteUser(partner);
       setCallType(type);
       remoteUserIdRef.current = partner._id;
 
-      const pc = createPeerConnection(partner._id);
+      const pc = createPeerConnection(partner._id, iceServers);
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
       const offer = await pc.createOffer();
@@ -160,12 +168,12 @@ export const CallProvider = ({ children }) => {
     const { from, offer, callType: incomingType, caller } = incomingCall;
 
     try {
-      const stream = await getMedia(incomingType);
+      const [stream, iceServers] = await Promise.all([getMedia(incomingType), getIceServers()]);
       setRemoteUser(caller);
       setCallType(incomingType);
       remoteUserIdRef.current = from;
 
-      const pc = createPeerConnection(from);
+      const pc = createPeerConnection(from, iceServers);
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
