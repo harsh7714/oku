@@ -118,20 +118,31 @@ const PostCard = ({ post, onDelete }) => {
   return (
     <div className="post-card fade-in">
       <div className="post-header">
-        <div className="conversation-avatar-wrap" onClick={() => navigate(`/profile/${post.userId.username}`)}>
+        <button
+          type="button"
+          className="conversation-avatar-wrap"
+          aria-label={`View ${post.userId.username}'s profile`}
+          onClick={() => navigate(`/profile/${post.userId.username}`)}
+        >
           <img
             src={getAvatarUrl(post.userId)}
             alt="Avatar"
             className="avatar post-avatar"
+            loading="lazy"
             width="40"
             height="40"
           />
           {isAuthorOnline && <span className="presence-dot" />}
-        </div>
-        <div className="post-user-info" onClick={() => navigate(`/profile/${post.userId.username}`)}>
+        </button>
+        <button
+          type="button"
+          className="post-user-info"
+          aria-label={`View ${post.userId.username}'s profile`}
+          onClick={() => navigate(`/profile/${post.userId.username}`)}
+        >
           <span className="post-username">{post.userId.username}</span>
           <span className="post-time">{formatRelativeTime(post.createdAt)}</span>
-        </div>
+        </button>
         {isOwner && (
           <button className="btn-delete-post" onClick={() => onDelete(post._id)} title="Delete Post">
             <Trash2 size={16} />
@@ -158,6 +169,7 @@ const PostCard = ({ post, onDelete }) => {
               src={getMediaUrl(post.media)}
               alt="Post Attachment"
               className="post-media-img"
+              loading="lazy"
               onClick={handleMediaClick}
             />
             {showHeartBurst && <Heart className="heart-burst-icon" size={90} fill="white" />}
@@ -169,15 +181,15 @@ const PostCard = ({ post, onDelete }) => {
       </div>
 
       <div className="post-actions">
-        <button className={`action-btn like-btn ${liked ? 'active' : ''}`} onClick={handleLike}>
+        <button aria-label={liked ? 'Unlike post' : 'Like post'} className={`action-btn like-btn ${liked ? 'active' : ''}`} onClick={handleLike}>
           <Heart size={18} fill={liked ? 'currentColor' : 'transparent'} className={likeJustPopped ? 'pop-glow' : ''} />
           <span>{likesCount}</span>
         </button>
-        <button className={`action-btn comment-btn ${showComments ? 'active' : ''}`} onClick={toggleComments}>
+        <button aria-label={showComments ? 'Hide comments' : 'Show comments'} className={`action-btn comment-btn ${showComments ? 'active' : ''}`} onClick={toggleComments}>
           <MessageSquare size={18} />
           <span>{commentsCount}</span>
         </button>
-        <button className="action-btn share-btn" onClick={() => setShowShareModal(true)} title="Share to chat">
+        <button aria-label="Share post" className="action-btn share-btn" onClick={() => setShowShareModal(true)} title="Share to chat">
           <Share2 size={18} />
         </button>
       </div>
@@ -198,6 +210,7 @@ const PostCard = ({ post, onDelete }) => {
             <MentionInput
               as="input"
               type="text"
+              aria-label="Write a comment"
               placeholder="Write a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}

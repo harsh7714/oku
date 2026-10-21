@@ -3,6 +3,13 @@
   cursor: zoom-out;
 }
 
+/* The shared mobile modal rule turns dialogs into bottom sheets. Keep image
+   viewing centered in the viewport instead. */
+.modal-overlay.lightbox-overlay {
+  align-items: center;
+  justify-content: center;
+}
+
 .lightbox-image {
   max-width: 100%;
   max-height: 100%;

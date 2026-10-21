@@ -25,6 +25,7 @@
   flex-direction: column;
   overflow: hidden;
   margin-bottom: 24px;
+  border: 1px solid var(--border-subtle);
 }
 
 .profile-cover-section {
@@ -42,7 +43,7 @@
 .cover-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, #17140f 0%, #221b12 100%);
+  background: var(--bg-space);
 }
 
 .profile-meta-details {
@@ -77,8 +78,22 @@
   padding: 8px 16px;
 }
 
-.btn-logout-mobile {
-  display: none;
+.btn-profile-settings {
+  font-size: 0.88rem;
+  padding: 8px 14px;
+}
+
+.profile-settings-page {
+  max-width: 780px;
+}
+
+.profile-settings-back {
+  align-self: flex-start;
+  min-height: 36px;
+  gap: 7px;
+  margin: 4px 0 14px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
 }
 
 .profile-text-details {
@@ -171,7 +186,8 @@
 .profile-view-toggle {
   display: flex;
   gap: 2px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-space);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 4px;
 }
@@ -183,8 +199,8 @@
   background: transparent;
   border: none;
   color: var(--text-muted);
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
@@ -295,7 +311,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 14px;
-  background: linear-gradient(135deg, rgba(46, 230, 166, 0.16), rgba(47, 125, 255, 0.12));
+  background: var(--bg-space);
 }
 
 .profile-grid-text-icon {
@@ -351,7 +367,7 @@
 .cover-preview-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #17140f, #221b12);
+  background: var(--bg-space);
 }
 
 .btn-upload-cover {
@@ -413,41 +429,6 @@
   padding: 12px;
 }
 
-.danger-zone-card {
-  margin-top: 12px;
-  padding: 16px;
-  border-radius: var(--radius-md);
-  background: rgba(255, 68, 51, 0.08);
-  border: 1px solid rgba(255, 68, 51, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.danger-zone-info {
-  flex: 1;
-}
-
-.danger-zone-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--error);
-  margin-bottom: 2px;
-}
-
-.danger-zone-desc {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.btn-delete-account {
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-}
-
-
 @media (max-width: 600px) {
   .profile-cover-section {
     height: 140px;
@@ -474,12 +455,4 @@
     flex: 1;
     justify-content: center;
   }
-.btn-logout-profile {
-  display: inline-flex;
-}
-.btn-logout-profile:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: var(--error);
-}
-
 }

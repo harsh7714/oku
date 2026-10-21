@@ -7,14 +7,15 @@
 .notifications-header {
   position: sticky;
   top: 0;
-  z-index: 800;
-  padding: 18px 24px;
-  margin: 0 0 24px;
+  z-index: var(--z-sticky);
+  padding: 16px 20px;
+  margin: 0 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-dark);
-  border-bottom: 3px solid var(--primary);
+  background: color-mix(in srgb, var(--bg-dark) 88%, transparent);
+  border-bottom: 1px solid var(--border-glass);
+  backdrop-filter: blur(var(--blur));
 }
 
 .notifications-title {
@@ -65,7 +66,7 @@
 
 .notification-item.unread {
   border-left-color: var(--primary);
-  background: linear-gradient(90deg, rgba(46, 230, 166, 0.1), transparent 65%);
+  background: color-mix(in srgb, var(--primary) 9%, var(--bg-card));
 }
 
 .notif-details {

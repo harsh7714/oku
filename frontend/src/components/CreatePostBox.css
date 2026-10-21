@@ -1,6 +1,8 @@
 .create-post-box {
   padding: 20px;
   margin-bottom: 24px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
 }
 
 .post-input-row {
@@ -19,6 +21,7 @@
   outline: none;
   flex: 1;
   min-height: 80px;
+  line-height: 1.55;
 }
 .post-textarea::placeholder {
   color: var(--text-dark);

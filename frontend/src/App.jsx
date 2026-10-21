@@ -20,6 +20,7 @@ import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
 
 import './App.css';
+import './app-theme.css';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -101,7 +102,7 @@ const AppContent = () => {
 
   // Reels and Messages are immersive, fullscreen-on-mobile experiences —
   // no room for the right sidebar there.
-  const isImmersivePage = location.pathname === '/messages' || location.pathname === '/reels';
+  const isImmersivePage = ['/messages', '/reels'].includes(location.pathname);
   const showRightSidebar = !isImmersivePage;
   // The mobile top navbar (branding + notification bell) is only really
   // "home" for the app's own wordmark — every other page either has its
@@ -126,6 +127,10 @@ const AppContent = () => {
         <Route
           path="/notifications"
           element={<NotificationsPage onReadNotifications={() => setUnreadNotifications(0)} />}
+        />
+        <Route
+          path="/settings"
+          element={<Navigate to={`/profile/${user.username}?section=settings`} replace />}
         />
         <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

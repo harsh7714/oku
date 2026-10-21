@@ -4,40 +4,88 @@
   --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Color Palette — bold gradient accent, borderless elevated surfaces */
-  --bg-dark: #060606;
-  --bg-space: #0d0d0e;
-  --bg-card: #17171a;
-  --bg-card-hover: #202024;
-  --border-glass: rgba(255, 255, 255, 0.08);
+  color-scheme: dark;
+  --bg-dark: #101414;
+  --bg-space: #171d1d;
+  --bg-card: #1d2524;
+  --bg-card-hover: #25302f;
+  --surface-raised: #222b2a;
+  --border-glass: rgba(232, 241, 239, 0.12);
+  --border-subtle: rgba(232, 241, 239, 0.08);
   --border-active: var(--primary);
 
-  --primary: #2ee6a6;
-  --primary-glow: rgba(46, 230, 166, 0.35);
-  --primary-hover: #7ff2cc;
-  --primary-ink: #051914;
-  --secondary: #2f7dff;
-  --secondary-glow: rgba(47, 125, 255, 0.35);
-  --accent-gradient: linear-gradient(120deg, #2ee6a6 0%, #22c9e6 50%, #2f7dff 100%);
+  --primary: #4ac7a1;
+  --primary-glow: rgba(74, 199, 161, 0.2);
+  --primary-hover: #78d9bb;
+  --primary-ink: #09211b;
+  --secondary: #93a7a2;
+  --secondary-glow: rgba(147, 167, 162, 0.2);
+  --accent-gradient: linear-gradient(135deg, #4ac7a1 0%, #6bcab5 100%);
 
-  --text-main: #fafafa;
-  --text-muted: #9a9a9a;
-  --text-dark: #5c5c5c;
+  --text-main: #edf5f2;
+  --text-muted: #a8b8b4;
+  --text-dark: #71817d;
 
-  --success: #2fd97f;
-  --error: #ff4433;
-  --warning: #ffcc33;
+  --success: #55c98b;
+  --error: #ed746c;
+  --warning: #e5b967;
 
-  --blur: 6px;
+  --blur: 10px;
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
+  --radius-xl: 26px;
   --radius-full: 9999px;
 
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.22);
   --shadow-hard: 5px 5px 0 rgba(0, 0, 0, 0.9);
   --shadow-hard-sm: 3px 3px 0 rgba(0, 0, 0, 0.9);
   --shadow-glow: 0 0 24px var(--primary-glow);
-  --transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition: all 180ms ease;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: clamp(1.75rem, 4vw, 2.5rem);
+  --z-sticky: 900;
+  --z-nav: 1000;
+  --z-modal: 2500;
+  --z-toast: 3000;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg-dark: #f4f7f6;
+    --bg-space: #eaf0ee;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f3f7f6;
+    --surface-raised: #ffffff;
+    --border-glass: rgba(23, 50, 46, 0.14);
+    --border-subtle: rgba(23, 50, 46, 0.09);
+    --primary: #167a64;
+    --primary-glow: rgba(22, 122, 100, 0.18);
+    --primary-hover: #0f624f;
+    --primary-ink: #ffffff;
+    --secondary: #5b6c68;
+    --secondary-glow: rgba(91, 108, 104, 0.18);
+    --accent-gradient: linear-gradient(135deg, #167a64 0%, #2c9279 100%);
+    --text-main: #17221f;
+    --text-muted: #5b6c68;
+    --text-dark: #83918e;
+    --shadow-card: 0 10px 30px rgba(33, 55, 50, 0.1);
+    --shadow-soft: 0 14px 40px rgba(33, 55, 50, 0.08);
+  }
 }
 
 /* Base Styles */
@@ -50,14 +98,22 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-dark);
-  background-image:
-    radial-gradient(at 10% 0%, rgba(46, 230, 166, 0.08) 0px, transparent 55%),
-    radial-gradient(at 90% 90%, rgba(47, 125, 255, 0.08) 0px, transparent 55%);
+  background-image: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-space) 100%);
   background-attachment: fixed;
   color: var(--text-main);
   overflow-x: hidden;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, var(--primary-glow), transparent 32rem);
+  opacity: 0.32;
+  z-index: -1;
 }
 
 a {
@@ -74,6 +130,14 @@ h1, h2, h3 {
 button, input, textarea {
   font-family: inherit;
   color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 /* Scrollbar */
@@ -97,7 +161,8 @@ button, input, textarea {
    true floating overlays (modals) which additionally blur what's behind. */
 .glass {
   background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-space) 100%);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
 }
 
@@ -120,6 +185,17 @@ button, input, textarea {
 .card:hover {
   background: var(--bg-card-hover);
   transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Animations */
@@ -166,6 +242,7 @@ button, input, textarea {
   cursor: pointer;
   transition: var(--transition);
   outline: none;
+  min-height: 44px;
 }
 
 .btn-primary {
@@ -198,8 +275,8 @@ button, input, textarea {
 }
 
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border-radius: var(--radius-full);
 }
@@ -267,7 +344,7 @@ button, input, textarea {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 2500;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -291,6 +368,7 @@ button, input, textarea {
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65);
   border-radius: var(--radius-md);
   overflow-y: auto;
+  border: 1px solid var(--border-glass);
 }
 
 .modal-content::before {
@@ -359,7 +437,7 @@ button, input, textarea {
 .app-container {
   display: grid;
   grid-template-columns: 280px 1fr 340px;
-  max-width: 1440px;
+  max-width: 1480px;
   margin: 0 auto;
   min-height: 100vh;
   /* Grid's `align-content` defaults to `normal`, which computes to `stretch`
@@ -370,8 +448,8 @@ button, input, textarea {
      size instead makes row position/height predictable, which the Reels
      page's mobile height math (ReelsPage.css) depends on. */
   align-content: start;
-  gap: 24px;
-  padding: 24px;
+  gap: 28px;
+  padding: 28px;
 }
 
 /* Grid items default to min-width:auto, refusing to shrink below their
@@ -389,8 +467,8 @@ button, input, textarea {
 @media (max-width: 1024px) {
   .app-container {
     grid-template-columns: 80px 1fr;
-    padding: 16px;
-    gap: 16px;
+    padding: 18px;
+    gap: 18px;
   }
   .app-container .right-sidebar {
     display: none;
@@ -401,6 +479,18 @@ button, input, textarea {
     grid-template-columns: 1fr;
     padding: 12px;
     padding-bottom: 84px; /* for mobile bottom tab-bar */
+  }
+
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    max-width: none;
+    max-height: min(88vh, 720px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 24px 18px calc(18px + env(safe-area-inset-bottom, 0px));
   }
 }
 

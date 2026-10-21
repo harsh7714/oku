@@ -8,10 +8,11 @@
   position: sticky;
   top: 0;
   z-index: 900;
-  padding: 18px 24px;
-  margin: 0 0 24px;
-  background: var(--bg-dark);
-  border-bottom: 3px solid var(--primary);
+  padding: 16px 20px;
+  margin: 0 0 20px;
+  background: rgba(6, 6, 6, 0.82);
+  border-bottom: 1px solid var(--border-glass);
+  backdrop-filter: blur(14px);
 }
 
 .feed-title {
@@ -19,6 +20,18 @@
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feed-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 14px var(--primary-glow);
 }
 
 .spinner {

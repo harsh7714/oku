@@ -74,7 +74,12 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
               const isFollowing = currentUser?.following?.includes(u._id);
               return (
                 <div key={u._id} className="follow-list-item">
-                  <div className="follow-list-user" onClick={() => goToProfile(u.username)}>
+                  <button
+                    type="button"
+                    className="follow-list-user"
+                    onClick={() => goToProfile(u.username)}
+                    aria-label={`View ${u.username}'s profile`}
+                  >
                     <img
                       src={getAvatarUrl(u)}
                       alt="Avatar"
@@ -86,7 +91,7 @@ const FollowListModal = ({ activeTab, followers, following, currentUser, onClose
                       <p className="follow-list-username">{u.username}</p>
                       {u.bio && <p className="follow-list-bio">{u.bio}</p>}
                     </div>
-                  </div>
+                  </button>
                   {!isSelf && (
                     <button
                       className={`btn follow-list-action-btn ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}

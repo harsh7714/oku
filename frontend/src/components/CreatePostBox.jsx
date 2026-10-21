@@ -103,6 +103,7 @@ const CreatePostBox = ({ onPostCreated }) => {
           />
           <MentionInput
             as="textarea"
+            aria-label="Post content"
             placeholder="What's happening on Oku?"
             value={content}
             onChange={(e) => setContent(e.target.value)}

@@ -6,13 +6,13 @@
      the chat panel until the user scrolls. dvh tracks the real, current
      viewport instead; the vh line above stays as a fallback for browsers
      that don't support dvh yet. */
-  height: calc(100dvh - 48px);
+  height: calc(100dvh - 56px);
   display: flex;
 }
 
 .messages-shell {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: minmax(280px, 32%) minmax(0, 1fr);
   width: 100%;
   overflow: hidden;
 }
@@ -105,6 +105,7 @@
   transition: var(--transition);
   position: relative;
   border-left: 3px solid transparent;
+  min-height: 68px;
 }
 
 .conversation-item:hover {
@@ -702,6 +703,8 @@ img.chat-bubble-media {
   display: flex;
   align-items: center;
   padding: 8px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-sm);
   transition: var(--transition);
   flex-shrink: 0;

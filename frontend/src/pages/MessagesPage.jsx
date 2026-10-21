@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Send, Loader2, MessageCircle, Image, X, Trash2, Phone, Video, Reply, Play, MoreVertical } from 'lucide-react';
+import { Search, Send, Loader2, MessageCircle, Image, X, Trash2, Phone, Video, Reply, Play, MoreVertical, ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -505,6 +505,22 @@ const MessagesPage = ({ onOpen }) => {
     return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatMessageDay = (dateStr) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return date.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      ...(date.getFullYear() !== today.getFullYear() ? { year: 'numeric' } : {}),
+    });
+  };
+
   const formatConversationTime = (dateStr) => {
     const d = new Date(dateStr);
     const now = new Date();
@@ -522,7 +538,15 @@ const MessagesPage = ({ onOpen }) => {
         {/* Conversations panel */}
         <aside className={`conversations-panel ${activePartner ? 'hide-on-mobile' : ''}`}>
           <div className="conversations-header">
-            <h2>Messages</h2>
+            <div className="conversations-heading">
+              <div>
+                <h2>Messages</h2>
+                <p>Stay in the loop</p>
+              </div>
+              {conversations.length > 0 && (
+                <span className="conversation-count">{conversations.length}</span>
+              )}
+            </div>
           </div>
 
           <div className="conversation-search">
@@ -591,15 +615,24 @@ const MessagesPage = ({ onOpen }) => {
         <section className={`chat-panel ${activePartner ? '' : 'hide-on-mobile'}`}>
           {!activePartner ? (
             <div className="chat-placeholder">
-              <MessageCircle size={48} />
-              <h3>Select a conversation</h3>
-              <p>Choose someone from your conversations, or search to start a new chat.</p>
+              <div className="chat-placeholder-mark">
+                <MessageCircle size={27} />
+                <span><MessageCircle size={15} /></span>
+              </div>
+              <span className="chat-placeholder-eyebrow">YOUR INBOX</span>
+              <h3>Conversations start here</h3>
+              <p>Select a chat or search for someone to catch up with.</p>
             </div>
           ) : (
             <>
               <div className="chat-header">
-                <button className="btn-back-mobile" onClick={() => setActivePartner(null)}>
-                  &larr;
+                <button
+                  type="button"
+                  className="btn-back-mobile"
+                  onClick={() => setActivePartner(null)}
+                  aria-label="Back to conversations"
+                >
+                  <ArrowLeft size={19} />
                 </button>
                 <div className="conversation-avatar-wrap">
                   <img src={getAvatarUrl(activePartner)} alt="Avatar" className="avatar" width="38" height="38" />
@@ -611,30 +644,36 @@ const MessagesPage = ({ onOpen }) => {
                     {isPartnerOnline ? 'Online' : `Last seen ${formatRelativeTime(activePartner.lastSeen)}`}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  className="btn-call"
-                  onClick={() => startCall(activePartner, 'audio')}
-                  title="Voice call"
-                >
-                  <Phone size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="btn-call"
-                  onClick={() => startCall(activePartner, 'video')}
-                  title="Video call"
-                >
-                  <Video size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="btn-delete-conversation"
-                  onClick={handleDeleteConversation}
-                  title="Delete conversation"
-                >
-                  <Trash2 size={17} />
-                </button>
+                <div className="chat-header-actions">
+                  <button
+                    type="button"
+                    className="btn-call"
+                    onClick={() => startCall(activePartner, 'audio')}
+                    title="Voice call"
+                    aria-label="Start voice call"
+                  >
+                    <Phone size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-call"
+                    onClick={() => startCall(activePartner, 'video')}
+                    title="Video call"
+                    aria-label="Start video call"
+                  >
+                    <Video size={17} />
+                  </button>
+                  <span className="chat-header-action-divider" />
+                  <button
+                    type="button"
+                    className="btn-delete-conversation"
+                    onClick={handleDeleteConversation}
+                    title="Delete conversation"
+                    aria-label="Delete conversation"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
 
               <div className="chat-messages">
@@ -644,16 +683,31 @@ const MessagesPage = ({ onOpen }) => {
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="chat-empty">
-                    <p>No messages yet. Say hi to {activePartner.username}!</p>
+                    <div className="chat-empty-avatar conversation-avatar-wrap">
+                      <img src={getAvatarUrl(activePartner)} alt="" className="avatar" width="58" height="58" />
+                      {isPartnerOnline && <span className="presence-dot" />}
+                    </div>
+                    <span className="chat-placeholder-eyebrow">NEW CONVERSATION</span>
+                    <h3>Say hello to {activePartner.username}</h3>
+                    <p>Your messages will appear here.</p>
                   </div>
                 ) : (
-                  messages.map((m) => {
+                  messages.map((m, index) => {
                     const isMine = m.senderId._id === user._id;
                     const reactionGroups = groupReactions(m.reactions);
                     const isSharedReel = m.sharedPost && m.sharedPost.mediaType === 'video';
                     const isMediaOnly = (!m.content && !m.sharedPost && m.media) || (!m.content && isSharedReel);
+                    const previousMessage = messages[index - 1];
+                    const startsNewDay = !previousMessage ||
+                      new Date(previousMessage.createdAt).toDateString() !== new Date(m.createdAt).toDateString();
                     return (
-                      <div key={m._id} className={`chat-bubble-row ${isMine ? 'mine' : ''}`}>
+                      <React.Fragment key={m._id}>
+                      {startsNewDay && (
+                        <div className="chat-date-separator">
+                          <span>{formatMessageDay(m.createdAt)}</span>
+                        </div>
+                      )}
+                      <div className={`chat-bubble-row ${isMine ? 'mine' : ''}`}>
                         {/* Desktop: always-visible "more" button. Mobile: no
                             visible trigger — the same menu opens on a
                             long-press of the bubble instead (see the
@@ -801,12 +855,17 @@ const MessagesPage = ({ onOpen }) => {
                           </div>
                         )}
                       </div>
+                      </React.Fragment>
                     );
                   })
                 )}
                 {isPartnerTyping && (
                   <div className="chat-bubble-row">
-                    <div className="chat-bubble typing-bubble">
+                    <div
+                      className="chat-bubble typing-bubble"
+                      role="status"
+                      aria-label={`${activePartner.username} is typing`}
+                    >
                       <span className="typing-dot" />
                       <span className="typing-dot" />
                       <span className="typing-dot" />

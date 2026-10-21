@@ -7,7 +7,8 @@
   gap: 16px;
   background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-space) 100%);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
   overflow: hidden;
   transition: var(--transition);
 }
@@ -25,7 +26,8 @@
 
 .post-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  border-color: rgba(46, 230, 166, 0.18);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 24px rgba(46, 230, 166, 0.05);
 }
 .post-card:hover::before {
   opacity: 1;
@@ -38,6 +40,9 @@
 }
 
 .post-header .conversation-avatar-wrap {
+  background: transparent;
+  border: 0;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -55,6 +60,10 @@
   flex-direction: column;
   flex: 1;
   cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-align: left;
 }
 
 .post-username {
@@ -203,6 +212,7 @@
   cursor: pointer;
   transition: var(--transition);
   padding: 8px 14px;
+  min-height: 44px;
   border-radius: var(--radius-full);
 }
 

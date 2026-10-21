@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import PostCard from '../components/PostCard';
 import CreatePostBox from '../components/CreatePostBox';
 import FollowListModal from '../components/FollowListModal';
 import PostViewerModal from '../components/PostViewerModal';
-import ConfirmDialog from '../components/ConfirmDialog';
+import ImageLightbox from '../components/ImageLightbox';
+import AccountSettings from './SettingsPage';
 import EmptyState from '../components/EmptyState';
 import api from '../services/api';
-import { Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon, LogOut, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon, Settings, Expand } from 'lucide-react';
 
 import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { toSafeHref } from '../utils/toSafeHref';
@@ -19,7 +20,8 @@ import './ProfilePage.css';
 const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser, setUser: setCurrentUser, logout } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user: currentUser, setUser: setCurrentUser } = useAuth();
   const toast = useToast();
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -29,6 +31,7 @@ const ProfilePage = () => {
   const [viewMode, setViewMode] = useState('list');
   const [mediaFilter, setMediaFilter] = useState('all');
   const [viewerIndex, setViewerIndex] = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
   
   // Edit Form State
   const [editBio, setEditBio] = useState('');
@@ -39,26 +42,6 @@ const ProfilePage = () => {
   const [coverPicPreview, setCoverPicPreview] = useState('');
   
   const [saving, setSaving] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingAccount, setDeletingAccount] = useState(false);
-
-  const handleDeleteAccount = async () => {
-    setDeletingAccount(true);
-    try {
-      await api.delete('/users/account');
-      toast.success('Your account has been deleted.');
-      setShowDeleteConfirm(false);
-      setShowEditModal(false);
-      await logout();
-      navigate('/login');
-    } catch (err) {
-      console.error('Delete account error:', err);
-      toast.error(err.response?.data?.message || 'Failed to delete account');
-    } finally {
-      setDeletingAccount(false);
-    }
-  };
-
   const fetchProfile = async () => {
 
     setLoading(true);
@@ -217,11 +200,6 @@ const ProfilePage = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
   if (loading) {
     return (
       <div className="profile-loading">
@@ -240,13 +218,43 @@ const ProfilePage = () => {
     );
   }
 
+  if (isOwnProfile && searchParams.get('section') === 'settings') {
+    return (
+      <main className="profile-main-content profile-settings-page fade-in">
+        <button
+          type="button"
+          className="btn btn-secondary profile-settings-back"
+          onClick={() => setSearchParams({})}
+        >
+          <ArrowLeft size={15} />
+          <span>Back to profile</span>
+        </button>
+        <AccountSettings embedded />
+      </main>
+    );
+  }
+
   return (
     <main className="profile-main-content fade-in">
       <div className="profile-card-container glass">
         {/* Cover Photo */}
         <div className="profile-cover-section">
           {profileUser.coverPicture ? (
-            <img src={getMediaUrl(profileUser.coverPicture)} alt="Cover" className="cover-img" />
+            <button
+              type="button"
+              className="profile-cover-viewer"
+              onClick={() => setLightboxImage({
+                src: getMediaUrl(profileUser.coverPicture),
+                alt: `${profileUser.username}'s cover photo`,
+              })}
+              aria-label={`View ${profileUser.username}'s cover photo`}
+            >
+              <img src={getMediaUrl(profileUser.coverPicture)} alt="" className="cover-img" />
+              <span className="profile-cover-view-hint">
+                <Expand size={14} />
+                <span>View cover photo</span>
+              </span>
+            </button>
           ) : (
             <div className="cover-placeholder" />
           )}
@@ -255,13 +263,26 @@ const ProfilePage = () => {
         {/* Profile Details Container */}
         <div className="profile-meta-details">
           <div className="profile-avatar-row">
-            <img
-              src={getAvatarUrl(profileUser)}
-              alt="Avatar"
-              className="profile-avatar avatar"
-              width="100"
-              height="100"
-            />
+            <button
+              type="button"
+              className="profile-avatar-viewer"
+              onClick={() => setLightboxImage({
+                src: getAvatarUrl(profileUser),
+                alt: `${profileUser.username}'s profile photo`,
+              })}
+              aria-label={`View ${profileUser.username}'s profile photo`}
+            >
+              <img
+                src={getAvatarUrl(profileUser)}
+                alt=""
+                className="profile-avatar avatar"
+                width="110"
+                height="110"
+              />
+              <span className="profile-avatar-view-hint" aria-hidden="true">
+                <Expand size={13} />
+              </span>
+            </button>
             <div className="profile-action-btns">
               {isOwnProfile ? (
                 <>
@@ -269,11 +290,14 @@ const ProfilePage = () => {
                     <Edit2 size={14} />
                     <span>Edit Profile</span>
                   </button>
-                  <button className="btn btn-secondary btn-logout-profile" onClick={handleLogout} title="Log Out">
-                    <LogOut size={14} />
-                    <span>Logout</span>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-profile-settings"
+                    onClick={() => setSearchParams({ section: 'settings' })}
+                  >
+                    <Settings size={14} />
+                    <span>Settings</span>
                   </button>
-
                 </>
               ) : (
                 <>
@@ -439,6 +463,14 @@ const ProfilePage = () => {
           against that long, scrollable profile page instead of the actual
           viewport — it could open seemingly "at the bottom" of the page
           rather than in front of whatever the user was looking at. */}
+      {lightboxImage && (
+        <ImageLightbox
+          src={lightboxImage.src}
+          alt={lightboxImage.alt}
+          onClose={() => setLightboxImage(null)}
+        />
+      )}
+
       {showEditModal && createPortal(
         <div className="modal-overlay">
           <div className="modal-content fade-in">
@@ -510,38 +542,11 @@ const ProfilePage = () => {
               <button type="submit" className="btn btn-primary btn-save-profile" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Profile'}
               </button>
-
-              <div className="danger-zone-card">
-                <div className="danger-zone-info">
-                  <h4 className="danger-zone-title">Delete Account</h4>
-                  <p className="danger-zone-desc">Permanently remove your profile, posts, comments, and messages.</p>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-danger btn-delete-account"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 size={14} />
-                  <span>Delete Account</span>
-                </button>
-              </div>
             </form>
+
           </div>
         </div>,
         document.body
-      )}
-
-      {/* Account Deletion Confirmation Dialog */}
-      {showDeleteConfirm && (
-        <ConfirmDialog
-          title="Delete Account Permanently?"
-          message="Are you sure you want to delete your account? All your posts, comments, messages, followers, and profile data will be permanently erased. This action cannot be undone."
-          confirmLabel={deletingAccount ? 'Deleting...' : 'Permanently Delete'}
-          cancelLabel="Cancel"
-          danger={true}
-          onConfirm={handleDeleteAccount}
-          onCancel={() => setShowDeleteConfirm(false)}
-        />
       )}
 
       {/* Followers / Following Modal */}

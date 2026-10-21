@@ -97,16 +97,18 @@ const AuthPage = () => {
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
             <div className="form-group">
-              <label className="form-label">Username</label>
+              <label className="form-label" htmlFor="auth-username">Username</label>
               <div className={`input-with-icon ${!usernameValidation.isValid ? 'has-error' : ''}`}>
                 <User className="input-icon" size={18} />
                 <input 
+                  id="auth-username"
                   type="text" 
                   placeholder="choose_username" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="form-input"
                   required
+                  aria-invalid={!usernameValidation.isValid}
                 />
               </div>
               {!usernameValidation.isValid && (
@@ -119,10 +121,11 @@ const AuthPage = () => {
           )}
 
           <div className="form-group">
-            <label className="form-label">{isLogin ? 'Email or Username' : 'Email Address'}</label>
+            <label className="form-label" htmlFor="auth-email">{isLogin ? 'Email or Username' : 'Email Address'}</label>
             <div className={`input-with-icon ${!emailValidation.isValid ? 'has-error' : ''}`}>
               <Mail className="input-icon" size={18} />
               <input 
+                id="auth-email"
                 type="text" 
                 placeholder={isLogin ? "email_or_username" : "email@domain.com"} 
                 value={email}
@@ -140,10 +143,11 @@ const AuthPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label" htmlFor="auth-password">Password</label>
             <div className="input-with-icon">
               <Lock className="input-icon" size={18} />
               <input 
+                id="auth-password"
                 type={showPassword ? "text" : "password"} 
                 placeholder="••••••••" 
                 value={password}
@@ -154,6 +158,7 @@ const AuthPage = () => {
               <button 
                 type="button" 
                 className="btn-toggle-password"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

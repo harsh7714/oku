@@ -1,18 +1,12 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Compass, Film, MessageCircle, Bell, LogOut } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Home, Compass, Film, MessageCircle, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getAvatarUrl } from '../utils/mediaUrl';
 import './Sidebar.css';
 
 const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const { user } = useAuth();
 
   if (!user) return null;
 
@@ -112,10 +106,8 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
         />
         <div className="user-details">
           <p className="username-label">{user.username}</p>
+          <span className="account-caption">Your account</span>
         </div>
-        <button className="btn-logout" onClick={handleLogout} title="Log Out">
-          <LogOut size={18} />
-        </button>
       </div>
     </aside>
   );

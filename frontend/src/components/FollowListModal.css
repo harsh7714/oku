@@ -1,5 +1,5 @@
 .follow-list-modal {
-  max-width: 420px;
+  max-width: 460px;
   max-height: 80vh;
   padding: 0;
   overflow: hidden;
@@ -9,22 +9,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 0 20px;
+  padding: 12px 14px 0 18px;
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .follow-tabs {
   display: flex;
-  gap: 4px;
+  align-self: stretch;
+  gap: 18px;
 }
 
 .follow-tab-btn {
   background: transparent;
   border: none;
+  border-bottom: 2px solid transparent;
   color: var(--text-muted);
   font-weight: 700;
-  font-size: 0.95rem;
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  padding: 9px 2px 11px;
+  border-radius: 0;
   cursor: pointer;
   transition: var(--transition);
   display: flex;
@@ -34,13 +37,11 @@
 
 .follow-tab-btn:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .follow-tab-btn.active {
-  color: var(--text-main);
-  background: linear-gradient(135deg, rgba(46, 230, 166, 0.25), rgba(47, 125, 255, 0.18));
-  box-shadow: 0 0 0 1px var(--border-active);
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
 .tab-count {
@@ -57,15 +58,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 14px 20px;
-  padding: 10px 14px;
-  background: var(--bg-space);
-  border-radius: var(--radius-md);
-  transition: var(--transition);
+  margin: 12px 18px;
+  padding: 9px 11px;
+  border: 1px solid var(--border-glass);
+  background: #10181d;
+  border-radius: 9px;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .follow-search-box:focus-within {
-  box-shadow: 0 0 0 2px var(--primary);
+  border-color: rgba(80, 194, 157, 0.62);
+  box-shadow: 0 0 0 3px rgba(80, 194, 157, 0.08);
 }
 
 .follow-search-icon {
@@ -79,16 +82,16 @@
   outline: none;
   width: 100%;
   color: var(--text-main);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
 }
 
 .follow-list-scroll {
   overflow-y: auto;
   max-height: calc(80vh - 130px);
-  padding: 4px 12px 16px;
+  padding: 0 18px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .follow-list-item {
@@ -96,13 +99,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 8px;
-  border-radius: var(--radius-md);
-  transition: var(--transition);
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--border-glass);
+  border-radius: 0;
+  transition: background-color var(--transition);
 }
 
 .follow-list-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(231, 237, 239, 0.025);
 }
 
 .follow-list-user {
@@ -112,6 +116,16 @@
   cursor: pointer;
   min-width: 0;
   flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.follow-list-user:focus-visible {
+  border-radius: 6px;
 }
 
 .follow-list-text {
@@ -120,7 +134,7 @@
 
 .follow-list-username {
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
@@ -128,7 +142,7 @@
 }
 
 .follow-list-bio {
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -138,8 +152,10 @@
 
 .follow-list-action-btn {
   flex-shrink: 0;
-  padding: 7px 14px;
-  font-size: 0.82rem;
+  min-height: 34px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 0.76rem;
 }
 
 .follow-list-empty {
