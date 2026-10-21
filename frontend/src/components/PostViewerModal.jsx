@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Heart, MessageSquare, Share2, Trash2, Send, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
@@ -131,7 +132,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
     }
   };
 
-  return (
+  return createPortal(
     <div className="post-viewer-overlay fade-in" onClick={onClose}>
       <button className="btn-close-modal post-viewer-close" onClick={onClose}>
         <X size={22} />
@@ -272,7 +273,8 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
