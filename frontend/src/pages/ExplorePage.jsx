@@ -2,11 +2,12 @@ import React, { useCallback, useState } from 'react';
 import EmptyState from '../components/EmptyState';
 import PostViewerModal from '../components/PostViewerModal';
 import api from '../services/api';
-import { Search, Loader2, SearchX, TrendingUp, Clock, X, Film } from 'lucide-react';
+import { Search, Loader2, SearchX, TrendingUp, Clock, X, Play } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useToast } from '../context/ToastContext';
 import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
+import { getMediaDescriptor } from '../utils/mediaMetadata';
 import './ExplorePage.css';
 
 const EXPLORE_PAGE_SIZE = 24;
@@ -157,18 +158,31 @@ const ExplorePage = () => {
       ) : (
         <>
           <div className="explore-grid">
-            {posts.map((post, i) => (
-              <button key={post._id} className="explore-grid-tile" onClick={() => setViewerIndex(i)}>
-                {post.mediaType === 'video' ? (
-                  <>
-                    <video src={getMediaUrl(post.media)} className="explore-grid-media" muted preload="metadata" />
-                    <Film className="explore-grid-video-icon" size={16} />
-                  </>
-                ) : (
-                  <img src={getMediaUrl(post.media)} alt="" className="explore-grid-media" loading="lazy" />
-                )}
-              </button>
-            ))}
+            {posts.map((post, i) => {
+              const media = getMediaDescriptor(post.media, post.mediaType);
+              return (
+                <button key={post._id} className="explore-grid-tile" onClick={() => setViewerIndex(i)}>
+                  {media.type === 'video' ? (
+                    <>
+                      <video
+                        src={getMediaUrl(media.url)}
+                        className="explore-grid-media"
+                        muted
+                        preload="metadata"
+                      />
+                      <Play className="explore-grid-video-icon" size={17} fill="white" />
+                    </>
+                  ) : (
+                    <img
+                      src={getMediaUrl(media.url)}
+                      alt=""
+                      className="explore-grid-media"
+                      loading="lazy"
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
           {hasMore && (
             <div ref={sentinelRef} className="explore-load-more-sentinel">

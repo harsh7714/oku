@@ -1,16 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, Share2, Trash2, Send, Volume2, VolumeX, X, Film } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Send, Volume2, VolumeX, X, Play } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
-import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
+import { getAvatarUrl } from '../utils/mediaUrl';
+import { getMediaDescriptor } from '../utils/mediaMetadata';
 import { renderPostContent } from '../utils/renderPostContent';
 import EmptyState from '../components/EmptyState';
 import MentionInput from '../components/MentionInput';
 import ShareToChatModal from '../components/ShareToChatModal';
+import MediaRenderer from '../components/MediaRenderer';
+import PostOptionsMenu from '../components/PostOptionsMenu';
+import ConfirmDialog from '../components/ConfirmDialog';
 import './ReelsPage.css';
 
 const REELS_PAGE_SIZE = 5;
@@ -28,9 +32,12 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+  const [commentToDelete, setCommentToDelete] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const media = getMediaDescriptor(post.media, post.mediaType);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -128,13 +135,20 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
 
   return (
     <div className="reel-item" data-post-id={post._id} ref={registerRef}>
-      <video
-        ref={videoRef}
-        src={getMediaUrl(post.media)}
-        className="reel-video"
+      <MediaRenderer
+        mediaRef={videoRef}
+        src={media.url}
+        type={media.type}
+        aspectRatio={media.aspectRatio}
+        width={media.width}
+        height={media.height}
+        mode="reel"
+        className="reel-media-renderer"
+        mediaClassName="reel-video"
         loop
         playsInline
         muted={muted}
+        active={active}
         onClick={handleVideoTap}
       />
       {showHeartBurst && <Heart className="heart-burst-icon reel-heart-burst" size={100} fill="white" />}
@@ -177,25 +191,58 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
 
         <div className="reel-actions-col">
           <button className={`reel-action-btn ${liked ? 'active' : ''}`} onClick={handleLike}>
-            <Heart size={26} fill={liked ? 'currentColor' : 'transparent'} />
+            <Heart size={22} fill={liked ? 'currentColor' : 'transparent'} />
             <span>{likesCount}</span>
           </button>
           <button className="reel-action-btn" onClick={openComments}>
-            <MessageSquare size={26} />
+            <MessageSquare size={22} />
             <span>{commentsCount}</span>
           </button>
           <button className="reel-action-btn" onClick={() => setShowShareModal(true)} title="Share to chat">
-            <Share2 size={24} />
+            <Share2 size={20} />
           </button>
           {isOwner && (
-            <button className="reel-action-btn" onClick={handleDeleteReel} title="Delete reel">
-              <Trash2 size={22} />
-            </button>
+            <PostOptionsMenu
+              onDelete={() => setShowDeleteConfirm(true)}
+              deleteLabel="Delete reel"
+              optionsLabel="Reel options"
+              className="reel-post-options"
+              triggerClassName="reel-options-trigger"
+            />
           )}
         </div>
       </div>
 
       {showShareModal && <ShareToChatModal postId={post._id} onClose={() => setShowShareModal(false)} />}
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Delete reel?"
+          message="This reel and its media will be permanently removed."
+          confirmLabel="Delete reel"
+          danger
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            handleDeleteReel();
+          }}
+        />
+      )}
+
+      {commentToDelete && (
+        <ConfirmDialog
+          title="Delete comment?"
+          message="This comment will be permanently removed."
+          confirmLabel="Delete comment"
+          danger
+          onCancel={() => setCommentToDelete(null)}
+          onConfirm={() => {
+            const commentId = commentToDelete;
+            setCommentToDelete(null);
+            handleDeleteComment(commentId);
+          }}
+        />
+      )}
 
       {showComments && (
         <div className="reel-comments-panel glass fade-in" onClick={(e) => e.stopPropagation()}>
@@ -226,9 +273,12 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
                     <p className="comment-text">{comment.content}</p>
                   </div>
                   {(comment.userId._id === user?._id || isOwner) && (
-                    <button className="btn-delete-comment" onClick={() => handleDeleteComment(comment._id)}>
-                      <Trash2 size={12} />
-                    </button>
+                    <PostOptionsMenu
+                      className="comment-options-menu"
+                      optionsLabel="Comment options"
+                      deleteLabel="Delete comment"
+                      onDelete={() => setCommentToDelete(comment._id)}
+                    />
                   )}
                 </div>
               ))
@@ -256,6 +306,7 @@ const ReelItem = ({ post, active, muted, onToggleMute, onDelete, registerRef }) 
 const ReelsPage = () => {
   const containerRef = useRef(null);
   const itemElsRef = useRef(new Map());
+  const visibleRatiosRef = useRef(new Map());
   const [activeId, setActiveId] = useState(null);
   const [muted, setMuted] = useState(true);
 
@@ -273,28 +324,33 @@ const ReelsPage = () => {
   } = useInfiniteScroll(fetchReelsPage);
 
   useEffect(() => {
-    if (!activeId && reels.length > 0) {
-      setActiveId(reels[0]._id);
-    }
-  }, [reels, activeId]);
-
-  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    visibleRatiosRef.current.clear();
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.dataset.postId);
+          const id = entry.target.dataset.postId;
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.75) {
+            visibleRatiosRef.current.set(id, entry.intersectionRatio);
+          } else {
+            visibleRatiosRef.current.delete(id);
           }
         });
+
+        const mostVisible = [...visibleRatiosRef.current.entries()]
+          .sort((a, b) => b[1] - a[1])[0];
+        setActiveId(mostVisible?.[0] || null);
       },
-      { root: container, threshold: 0.75 }
+      { root: container, threshold: [0, 0.75] }
     );
 
     itemElsRef.current.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      visibleRatiosRef.current.clear();
+    };
   }, [reels]);
 
   const registerRef = (id) => (el) => {
@@ -309,7 +365,7 @@ const ReelsPage = () => {
   if (!loading && reels.length === 0) {
     return (
       <main className="reels-main fade-in">
-        <EmptyState icon={Film} title="No reels yet" subtitle="Videos people post will show up here." />
+        <EmptyState icon={Play} title="No reels yet" subtitle="Videos people post will show up here." />
       </main>
     );
   }

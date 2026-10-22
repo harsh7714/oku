@@ -5,6 +5,8 @@ import { SERVER_URL } from './serverUrl';
 // /uploads/... path, so pass those through the backend origin.
 export function getMediaUrl(mediaPath) {
   if (!mediaPath) return '';
+  if (typeof mediaPath === 'object') mediaPath = mediaPath.url;
+  if (!mediaPath) return '';
   if (/^https?:\/\//i.test(mediaPath)) return mediaPath;
   return `${SERVER_URL}${mediaPath}`;
 }

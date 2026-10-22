@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Heart, MessageSquare, Send, Share2, Trash2 } from 'lucide-react';
+import { Heart, MessageSquare, Send, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -7,10 +7,14 @@ import { useSocket } from '../context/SocketContext';
 import { useToast } from '../context/ToastContext';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
+import { getMediaDescriptor } from '../utils/mediaMetadata';
 import { renderPostContent } from '../utils/renderPostContent';
 import ImageLightbox from './ImageLightbox';
 import MentionInput from './MentionInput';
 import ShareToChatModal from './ShareToChatModal';
+import MediaRenderer from './MediaRenderer';
+import PostOptionsMenu from './PostOptionsMenu';
+import ConfirmDialog from './ConfirmDialog';
 import './PostCard.css';
 
 const PostCard = ({ post, onDelete }) => {
@@ -24,11 +28,13 @@ const PostCard = ({ post, onDelete }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+  const [commentToDelete, setCommentToDelete] = useState(null);
   const [likeJustPopped, setLikeJustPopped] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const mediaClickTimerRef = useRef(null);
 
   const handleLike = async () => {
@@ -114,6 +120,7 @@ const PostCard = ({ post, onDelete }) => {
 
   const isOwner = post.userId._id === user?._id;
   const isAuthorOnline = onlineUsers.includes(post.userId._id);
+  const media = getMediaDescriptor(post.media, post.mediaType);
 
   return (
     <div className="post-card fade-in">
@@ -144,9 +151,7 @@ const PostCard = ({ post, onDelete }) => {
           <span className="post-time">{formatRelativeTime(post.createdAt)}</span>
         </button>
         {isOwner && (
-          <button className="btn-delete-post" onClick={() => onDelete(post._id)} title="Delete Post">
-            <Trash2 size={16} />
-          </button>
+          <PostOptionsMenu onDelete={() => setShowDeleteConfirm(true)} />
         )}
       </div>
 
@@ -163,20 +168,37 @@ const PostCard = ({ post, onDelete }) => {
             )}
           </div>
         )}
-        {post.media && post.mediaType === 'image' && (
+        {media.url && media.type === 'image' && (
           <div className="post-media-wrap">
-            <img
-              src={getMediaUrl(post.media)}
-              alt="Post Attachment"
-              className="post-media-img"
+            <MediaRenderer
+              src={media.url}
+              type={media.type}
+              aspectRatio={media.aspectRatio}
+              width={media.width}
+              height={media.height}
+              mode="feed"
+              className="post-media-renderer"
+              mediaClassName="post-media-img"
               loading="lazy"
               onClick={handleMediaClick}
             />
             {showHeartBurst && <Heart className="heart-burst-icon" size={90} fill="white" />}
           </div>
         )}
-        {post.media && post.mediaType === 'video' && (
-          <video src={getMediaUrl(post.media)} controls className="post-media-video" />
+        {media.url && media.type === 'video' && (
+          <div className="post-media-wrap">
+            <MediaRenderer
+              src={media.url}
+              type={media.type}
+              aspectRatio={media.aspectRatio}
+              width={media.width}
+              height={media.height}
+              mode="feed"
+              className="post-media-renderer"
+              mediaClassName="post-media-video"
+              controls
+            />
+          </div>
         )}
       </div>
 
@@ -196,9 +218,38 @@ const PostCard = ({ post, onDelete }) => {
 
       {showShareModal && <ShareToChatModal postId={post._id} onClose={() => setShowShareModal(false)} />}
 
-      {lightboxOpen && post.media && (
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Delete post?"
+          message="This post and its media will be permanently removed."
+          confirmLabel="Delete post"
+          danger
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            onDelete?.(post._id);
+          }}
+        />
+      )}
+
+      {commentToDelete && (
+        <ConfirmDialog
+          title="Delete comment?"
+          message="This comment will be permanently removed."
+          confirmLabel="Delete comment"
+          danger
+          onCancel={() => setCommentToDelete(null)}
+          onConfirm={() => {
+            const commentId = commentToDelete;
+            setCommentToDelete(null);
+            handleDeleteComment(commentId);
+          }}
+        />
+      )}
+
+      {lightboxOpen && media.url && (
         <ImageLightbox
-          src={getMediaUrl(post.media)}
+          src={getMediaUrl(media.url)}
           alt="Post attachment enlarged"
           onClose={() => setLightboxOpen(false)}
         />
@@ -245,9 +296,12 @@ const PostCard = ({ post, onDelete }) => {
                     <p className="comment-text">{comment.content}</p>
                   </div>
                   {(comment.userId._id === user?._id || isOwner) && (
-                    <button className="btn-delete-comment" onClick={() => handleDeleteComment(comment._id)}>
-                      <Trash2 size={12} />
-                    </button>
+                    <PostOptionsMenu
+                      className="comment-options-menu"
+                      optionsLabel="Comment options"
+                      deleteLabel="Delete comment"
+                      onDelete={() => setCommentToDelete(comment._id)}
+                    />
                   )}
                 </div>
               ))

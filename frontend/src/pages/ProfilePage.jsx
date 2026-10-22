@@ -10,10 +10,12 @@ import PostViewerModal from '../components/PostViewerModal';
 import ImageLightbox from '../components/ImageLightbox';
 import AccountSettings from './SettingsPage';
 import EmptyState from '../components/EmptyState';
+import MediaRenderer from '../components/MediaRenderer';
 import api from '../services/api';
 import { ArrowLeft, Edit2, Loader2, Camera, X, MessageCircle, LayoutGrid, List, Film, FileText, Link as LinkIcon, Grid3x3, Image as ImageIcon, Settings, Expand } from 'lucide-react';
 
 import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
+import { getMediaDescriptor } from '../utils/mediaMetadata';
 import { toSafeHref } from '../utils/toSafeHref';
 import './ProfilePage.css';
 
@@ -413,33 +415,57 @@ const ProfilePage = () => {
         </div>
       ) : (
         <div className="profile-posts-grid">
-          {filteredPosts.map((post) => (
-            <button
-              key={post._id}
-              className="profile-grid-tile"
-              onClick={() => {
-                if (post.mediaType === 'none') {
-                  setViewMode('list');
-                } else {
-                  setViewerIndex(mediaPosts.findIndex((p) => p._id === post._id));
-                }
-              }}
-            >
-              {post.mediaType === 'image' ? (
-                <img src={getMediaUrl(post.media)} alt="Post thumbnail" className="profile-grid-media" />
-              ) : post.mediaType === 'video' ? (
-                <>
-                  <video src={getMediaUrl(post.media)} className="profile-grid-media" muted preload="metadata" />
-                  <Film className="profile-grid-video-icon" size={16} />
-                </>
-              ) : (
-                <div className="profile-grid-placeholder profile-grid-text">
-                  <FileText size={18} className="profile-grid-text-icon" />
-                  <p>{post.content}</p>
-                </div>
-              )}
-            </button>
-          ))}
+          {filteredPosts.map((post) => {
+            const media = getMediaDescriptor(post.media, post.mediaType);
+            return (
+              <button
+                key={post._id}
+                className="profile-grid-tile"
+                onClick={() => {
+                  if (post.mediaType === 'none') {
+                    setViewMode('list');
+                  } else {
+                    setViewerIndex(mediaPosts.findIndex((p) => p._id === post._id));
+                  }
+                }}
+              >
+                {media.type === 'image' && media.url ? (
+                  <MediaRenderer
+                    src={media.url}
+                    type={media.type}
+                    aspectRatio={media.aspectRatio}
+                    width={media.width}
+                    height={media.height}
+                    mode="thumbnail"
+                    className="profile-grid-renderer"
+                    mediaClassName="profile-grid-media"
+                    loading="lazy"
+                  />
+                ) : media.type === 'video' && media.url ? (
+                  <>
+                    <MediaRenderer
+                      src={media.url}
+                      type={media.type}
+                      aspectRatio={media.aspectRatio}
+                      width={media.width}
+                      height={media.height}
+                      mode="thumbnail"
+                      className="profile-grid-renderer"
+                      mediaClassName="profile-grid-media"
+                      muted
+                      preload="metadata"
+                    />
+                    <Film className="profile-grid-video-icon" size={16} />
+                  </>
+                ) : (
+                  <div className="profile-grid-placeholder profile-grid-text">
+                    <FileText size={18} className="profile-grid-text-icon" />
+                    <p>{post.content}</p>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 

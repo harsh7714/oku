@@ -2,6 +2,7 @@ import Post from '../models/Post.js';
 import User from '../models/User.js';
 import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
 import { createNotification } from '../utils/createNotification.js';
+import { readMediaMetadata } from '../utils/mediaMetadata.js';
 
 // @desc    Create a new post
 // @route   POST /api/posts
@@ -9,18 +10,20 @@ import { createNotification } from '../utils/createNotification.js';
 export const createPost = async (req, res) => {
   try {
     const { content } = req.body;
-    let media = '';
+    let media = null;
     let mediaType = 'none';
 
     if (req.file) {
-      const { url } = await uploadFileToS3(req.file, 'posts');
-      media = url;
-      const extension = req.file.originalname.split('.').pop().toLowerCase();
-      if (['mp4', 'mov', 'avi'].includes(extension)) {
-        mediaType = 'video';
-      } else {
-        mediaType = 'image';
+      let metadata;
+      try {
+        metadata = await readMediaMetadata(req.file);
+      } catch (error) {
+        console.warn('Unable to read uploaded post media:', error.message);
+        return res.status(400).json({ message: 'Could not read this image or video. Please choose another file.' });
       }
+      const { url } = await uploadFileToS3(req.file, 'posts');
+      media = { url, ...metadata };
+      mediaType = metadata.type;
     }
 
     if (!content && !media) {
@@ -197,7 +200,7 @@ export const deletePost = async (req, res) => {
 
     // Delete media file from S3 if it exists
     if (post.media) {
-      await deleteFileFromS3(post.media);
+      await deleteFileFromS3(post.media.url || post.media);
     }
 
     await post.deleteOne();

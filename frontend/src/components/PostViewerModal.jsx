@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, Share2, Trash2, Send, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Send, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -10,6 +10,8 @@ import { getMediaUrl, getAvatarUrl } from '../utils/mediaUrl';
 import { renderPostContent } from '../utils/renderPostContent';
 import MentionInput from './MentionInput';
 import ShareToChatModal from './ShareToChatModal';
+import PostOptionsMenu from './PostOptionsMenu';
+import ConfirmDialog from './ConfirmDialog';
 import './PostViewerModal.css';
 
 // Fullscreen Instagram-style post viewer: media on one side, likes/comments
@@ -26,10 +28,12 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
   const [likesCount, setLikesCount] = useState(0);
   const [comments, setComments] = useState([]);
   const [commentsCount, setCommentsCount] = useState(0);
+  const [commentToDelete, setCommentToDelete] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const mediaClickTimerRef = useRef(null);
 
   // Reset per-post state whenever the viewer moves to a different post
@@ -193,9 +197,7 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
               <span className="post-time">{formatRelativeTime(post.createdAt)}</span>
             </div>
             {isOwner && (
-              <button className="btn-delete-post" onClick={handleDeletePost} title="Delete Post">
-                <Trash2 size={16} />
-              </button>
+              <PostOptionsMenu onDelete={() => setShowDeleteConfirm(true)} />
             )}
           </div>
 
@@ -233,9 +235,12 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
                     <p className="comment-text">{comment.content}</p>
                   </div>
                   {(comment.userId._id === user?._id || isOwner) && (
-                    <button className="btn-delete-comment" onClick={() => handleDeleteComment(comment._id)}>
-                      <Trash2 size={12} />
-                    </button>
+                    <PostOptionsMenu
+                      className="comment-options-menu"
+                      optionsLabel="Comment options"
+                      deleteLabel="Delete comment"
+                      onDelete={() => setCommentToDelete(comment._id)}
+                    />
                   )}
                 </div>
               ))
@@ -257,6 +262,35 @@ const PostViewerModal = ({ posts, initialIndex, onClose, onDelete }) => {
           </div>
 
           {showShareModal && <ShareToChatModal postId={post._id} onClose={() => setShowShareModal(false)} />}
+
+          {showDeleteConfirm && (
+            <ConfirmDialog
+              title="Delete post?"
+              message="This post and its media will be permanently removed."
+              confirmLabel="Delete post"
+              danger
+              onCancel={() => setShowDeleteConfirm(false)}
+              onConfirm={() => {
+                setShowDeleteConfirm(false);
+                handleDeletePost();
+              }}
+            />
+          )}
+
+          {commentToDelete && (
+            <ConfirmDialog
+              title="Delete comment?"
+              message="This comment will be permanently removed."
+              confirmLabel="Delete comment"
+              danger
+              onCancel={() => setCommentToDelete(null)}
+              onConfirm={() => {
+                const commentId = commentToDelete;
+                setCommentToDelete(null);
+                handleDeleteComment(commentId);
+              }}
+            />
+          )}
 
           <form className="comment-form post-viewer-comment-form" onSubmit={handleAddComment}>
             <MentionInput

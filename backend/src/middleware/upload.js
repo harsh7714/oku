@@ -60,6 +60,7 @@ export async function verifyFileContents(req, res, next) {
       if (!detected || !ALLOWED_MIMES.has(detected.mime)) {
         return res.status(400).json({ message: 'File content does not match a supported image, video, or audio format' });
       }
+      file.detectedMime = detected.mime;
     }
 
     next();

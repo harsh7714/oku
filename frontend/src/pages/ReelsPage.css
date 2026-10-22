@@ -5,22 +5,15 @@
 }
 
 .reels-feed {
-  width: 100%;
-  max-width: 430px;
-  height: calc(100vh - 48px);
-  /* 100vh on mobile browsers is the *largest* possible viewport (address
-     bar hidden), but the page loads with that bar visible, so real,
-     currently-visible height starts out shorter — sizing to plain 100vh
-     made the feed taller than what's actually on screen, pushing its
-     bottom (and the action icons/caption in it) down past the fixed tab
-     bar instead of ending exactly at it. dvh tracks the real, current
-     viewport as the browser chrome shows/hides; the vh line above is only
-     a fallback for browsers that don't support dvh yet. */
-  height: calc(100dvh - 48px);
+  width: min(27rem, 49.5dvh, 100%);
+  max-height: 88dvh;
+  aspect-ratio: 9 / 16;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
+  background: transparent;
   scrollbar-width: none;
+  flex: none;
 }
 .reels-feed::-webkit-scrollbar {
   display: none;
@@ -28,22 +21,26 @@
 
 .reel-item {
   position: relative;
+  width: 100%;
   height: 100%;
+  aspect-ratio: 9 / 16;
+  flex: 0 0 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  background: #000;
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border-radius: 0;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.reel-media-renderer {
+  flex: none;
+}
+
 .reel-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   cursor: pointer;
 }
 
@@ -112,7 +109,7 @@
 
 .reel-caption {
   color: rgba(255, 255, 255, 0.92);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   white-space: pre-wrap;
   word-break: break-word;
@@ -136,7 +133,7 @@
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   padding: 2px 0 0;
@@ -149,7 +146,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   pointer-events: auto;
 }
 
@@ -161,11 +158,11 @@
   align-items: center;
   gap: 4px;
   color: white;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 40px;
+  min-height: 40px;
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.6));
   transition: var(--transition);
 }
@@ -230,11 +227,15 @@
     margin: 0;
   }
   .reels-feed {
+    width: 100%;
     max-width: 100%;
     height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
     border-radius: 0;
   }
   .reel-item {
+    min-height: 100%;
     border-radius: 0;
     /* On desktop this margin separates rounded-corner reel "cards"; at
        fullscreen width it left a stray gap between snap points, showing a

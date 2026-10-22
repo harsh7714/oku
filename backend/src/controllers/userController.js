@@ -254,7 +254,7 @@ export const deleteUserAccount = async (req, res) => {
     const userPosts = await Post.find({ userId });
     for (const post of userPosts) {
       if (post.media) {
-        await deleteFileFromS3(post.media);
+        await deleteFileFromS3(post.media.url || post.media);
       }
     }
     const userPostIds = userPosts.map((p) => p._id);

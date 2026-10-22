@@ -485,10 +485,10 @@ textarea:focus-visible {
   margin: 0;
   padding: 19px 0 20px;
   border: 0;
-  border-bottom: 1px solid var(--border-glass);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  transform: none;
 }
 
 .post-card::before {
@@ -497,7 +497,7 @@ textarea:focus-visible {
 
 .post-card:hover {
   transform: none;
-  border-color: var(--border-glass);
+  border: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -530,40 +530,28 @@ textarea:focus-visible {
   font-size: 0.73rem;
 }
 
-.btn-delete-post {
-  color: #95a2a8;
-}
-
-.btn-delete-post:hover {
-  background: #382326;
-  color: var(--error);
-}
-
 .post-body {
   gap: 11px;
 }
 
 .post-text {
   color: #d0d9dd;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.65;
+}
+
+.comment-text {
+  font-size: 0.82rem;
+}
+
+.comment-username {
+  font-size: 0.78rem;
 }
 
 .post-hashtag,
 .post-mention,
 .post-link {
   color: var(--primary);
-}
-
-.post-media-img,
-.post-media-video {
-  max-height: 460px;
-  border-radius: 12px;
-  box-shadow: none;
-}
-
-.post-media-img:hover {
-  filter: none;
 }
 
 .post-actions {
@@ -577,6 +565,20 @@ textarea:focus-visible {
   padding: 6px 10px;
   color: #9cabb1;
   font-size: 0.8rem;
+}
+
+.post-actions .action-btn,
+.post-viewer-actions .action-btn {
+  min-height: 32px;
+  padding: 4px 8px;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.post-actions .action-btn svg,
+.post-viewer-actions .action-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .action-btn:hover {

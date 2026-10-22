@@ -1,0 +1,71 @@
+.media-renderer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: transparent;
+  isolation: isolate;
+}
+
+.media-renderer--feed {
+  max-height: 82dvh;
+}
+
+.media-renderer--thumbnail {
+  aspect-ratio: 1 / 1;
+  height: 100%;
+}
+
+.media-renderer--reel {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 9 / 16;
+  background: #000;
+}
+
+.media-renderer__content,
+.media-renderer__backdrop,
+.media-renderer__backdrop > img,
+.media-renderer__backdrop > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.media-renderer__content {
+  position: relative;
+  z-index: 1;
+}
+
+.media-renderer__backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.media-renderer__backdrop > img,
+.media-renderer__backdrop > video {
+  object-fit: cover;
+  filter: blur(1.5rem) brightness(0.58);
+  transform: scale(1.12);
+}
+
+.media-renderer--reel[data-fit='contain'] .media-renderer__content {
+  background: transparent;
+}
+
+.media-renderer--reel .media-renderer__content {
+  cursor: pointer;
+}
+
+.post-media-renderer {
+  width: 100%;
+}
+
+.post-media-renderer .media-renderer__content {
+  cursor: zoom-in;
+}
+
+.post-media-renderer video.media-renderer__content {
+  cursor: pointer;
+}

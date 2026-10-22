@@ -1,0 +1,91 @@
+.post-options-menu {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  z-index: 6;
+}
+
+.post-options-trigger {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.post-options-trigger:hover,
+.post-options-trigger[aria-expanded='true'] {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.post-options-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  width: max-content;
+  padding: 2px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+}
+
+.post-options-delete {
+  width: 100%;
+  min-height: 28px;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--error);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  text-align: left;
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.post-options-delete:hover {
+  background: rgba(255, 68, 51, 0.12);
+}
+
+.reel-post-options {
+  align-self: center;
+}
+
+.reel-options-trigger {
+  color: white;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.6));
+}
+
+.reel-post-options .post-options-dropdown {
+  top: 0;
+  right: calc(100% + 6px);
+}
+
+.comment-options-menu {
+  align-self: center;
+}
+
+.comment-options-menu .post-options-trigger {
+  width: 30px;
+  height: 30px;
+}
+
+.comment-options-menu .post-options-dropdown {
+  top: 0;
+  right: calc(100% + 4px);
+}

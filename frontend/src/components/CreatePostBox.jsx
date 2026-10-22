@@ -4,6 +4,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getAvatarUrl } from '../utils/mediaUrl';
+import { readLocalMediaDimensions } from '../utils/mediaMetadata';
 import MentionInput from './MentionInput';
 import './CreatePostBox.css';
 
@@ -14,22 +15,22 @@ const CreatePostBox = ({ onPostCreated }) => {
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaPreview, setMediaPreview] = useState('');
   const [mediaType, setMediaType] = useState('none');
+  const [mediaDimensions, setMediaDimensions] = useState(null);
+  const [readingDimensions, setReadingDimensions] = useState(false);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const metadataRequestRef = useRef(0);
 
-  const handleMediaChange = (e) => {
+  const handleMediaChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    const requestId = ++metadataRequestRef.current;
+    const nextType = file.type.startsWith('video/') ? 'video' : 'image';
     setMediaFile(file);
-
-    // Determine type
-    const fileType = file.type.split('/')[0];
-    if (fileType === 'video') {
-      setMediaType('video');
-    } else {
-      setMediaType('image');
-    }
+    setMediaType(nextType);
+    setMediaDimensions(null);
+    setReadingDimensions(true);
 
     // Object URLs are cheap references to the in-memory file, unlike
     // FileReader.readAsDataURL, which base64-encodes the whole file into a
@@ -38,10 +39,26 @@ const CreatePostBox = ({ onPostCreated }) => {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+
+    try {
+      const dimensions = await readLocalMediaDimensions(file, nextType);
+      if (requestId === metadataRequestRef.current) setMediaDimensions(dimensions);
+    } catch (error) {
+      if (requestId === metadataRequestRef.current) {
+        console.error('Unable to read selected media dimensions:', error);
+        toast.error('Could not read this image or video. Please choose another file.');
+        removeMedia();
+      }
+    } finally {
+      if (requestId === metadataRequestRef.current) setReadingDimensions(false);
+    }
   };
 
   const removeMedia = () => {
+    metadataRequestRef.current += 1;
     setMediaFile(null);
+    setMediaDimensions(null);
+    setReadingDimensions(false);
     setMediaPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return '';
@@ -68,6 +85,12 @@ const CreatePostBox = ({ onPostCreated }) => {
     formData.append('content', content);
     if (mediaFile) {
       formData.append('media', mediaFile);
+      if (mediaDimensions) {
+        formData.append('width', String(mediaDimensions.width));
+        formData.append('height', String(mediaDimensions.height));
+        formData.append('aspectRatio', String(mediaDimensions.aspectRatio));
+        formData.append('orientation', mediaDimensions.orientation);
+      }
     }
 
     try {
@@ -148,9 +171,9 @@ const CreatePostBox = ({ onPostCreated }) => {
           <button
             type="submit"
             className="btn btn-primary post-submit-btn"
-            disabled={loading || (!content.trim() && !mediaFile)}
+            disabled={loading || readingDimensions || (!content.trim() && !mediaFile)}
           >
-            {loading ? 'Posting...' : 'Post'}
+            {loading ? 'Posting...' : readingDimensions ? 'Reading media...' : 'Post'}
             <Send size={14} />
           </button>
         </div>

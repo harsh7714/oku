@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Compass, Film, MessageCircle, Bell } from 'lucide-react';
+import { Home, Compass, Play, MessageCircle, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getAvatarUrl } from '../utils/mediaUrl';
 import './Sidebar.css';
@@ -47,7 +47,7 @@ const Sidebar = ({ unreadNotifications = 0, unreadMessages = 0 }) => {
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <span className="nav-icon-pill">
-            <Film className="nav-icon" size={22} />
+            <Play className="nav-icon" size={22} />
           </span>
           <span className="nav-label">Reels</span>
         </NavLink>
