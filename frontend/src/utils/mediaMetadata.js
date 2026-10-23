@@ -23,6 +23,10 @@ export function getOrientation(aspectRatio) {
   return 'square';
 }
 
+export const MAX_VIDEO_DURATION_SECONDS = 60;
+export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
+export const MAX_VIDEO_BYTES_PER_SECOND = MAX_VIDEO_SIZE_BYTES / MAX_VIDEO_DURATION_SECONDS;
+
 export function readLocalMediaDimensions(file, type) {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file);
@@ -45,10 +49,16 @@ export function readLocalMediaDimensions(file, type) {
       video.onloadedmetadata = () => {
         const width = video.videoWidth;
         const height = video.videoHeight;
+        const duration = video.duration;
         cleanUp(video);
-        if (!width || !height) return reject(new Error('Unable to read video dimensions'));
+        if (!width || !height || !Number.isFinite(duration) || duration <= 0) {
+          return reject(new Error('Unable to read video metadata'));
+        }
+        if (duration > MAX_VIDEO_DURATION_SECONDS) {
+          return reject(new Error('Videos must be 60 seconds or shorter'));
+        }
         const aspectRatio = width / height;
-        resolve({ width, height, aspectRatio, orientation: getOrientation(aspectRatio) });
+        resolve({ width, height, duration, aspectRatio, orientation: getOrientation(aspectRatio) });
       };
       video.onerror = () => {
         cleanUp(video);

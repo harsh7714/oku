@@ -9,6 +9,10 @@ import sharp from 'sharp';
 const execFileAsync = promisify(execFile);
 const ffprobePath = typeof ffprobeStatic === 'string' ? ffprobeStatic : ffprobeStatic.path;
 
+export const MAX_VIDEO_DURATION_SECONDS = 60;
+export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
+export const MAX_VIDEO_BYTES_PER_SECOND = MAX_VIDEO_SIZE_BYTES / MAX_VIDEO_DURATION_SECONDS;
+
 export const getOrientation = (aspectRatio) => {
   if (aspectRatio < 0.95) return 'portrait';
   if (aspectRatio > 1.05) return 'landscape';
@@ -49,7 +53,7 @@ const readVideoMetadata = async (file) => {
       [
         '-v', 'error',
         '-select_streams', 'v:0',
-        '-show_entries', 'stream=width,height:stream_tags=rotate:stream_side_data=rotation',
+        '-show_entries', 'stream=width,height,duration:stream_tags=rotate:stream_side_data=rotation:format=duration',
         '-of', 'json',
         tempFile,
       ],
@@ -64,7 +68,16 @@ const readVideoMetadata = async (file) => {
     let { width, height } = stream;
     if (Math.round(Math.abs(rotation)) % 180 === 90) [width, height] = [height, width];
 
-    return buildMetadata('video', Number(width), Number(height));
+    const parsedOutput = JSON.parse(stdout);
+    const streamDuration = Number(stream.duration);
+    const formatDuration = Number(parsedOutput.format?.duration);
+    const duration = Number.isFinite(streamDuration) && streamDuration > 0
+      ? streamDuration
+      : formatDuration;
+    if (!Number.isFinite(duration) || duration <= 0) throw new Error('Uploaded video has no readable duration');
+    if (duration > MAX_VIDEO_DURATION_SECONDS) throw new Error('Videos must be 60 seconds or shorter');
+
+    return { ...buildMetadata('video', Number(width), Number(height)), duration };
   } finally {
     await rm(tempDirectory, { recursive: true, force: true });
   }

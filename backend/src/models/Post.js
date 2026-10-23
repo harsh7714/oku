@@ -7,6 +7,7 @@ const postMediaSchema = new mongoose.Schema(
     width: { type: Number, min: 1 },
     height: { type: Number, min: 1 },
     aspectRatio: { type: Number, min: 0 },
+    duration: { type: Number, min: 0 },
     orientation: { type: String, enum: ['portrait', 'landscape', 'square'] },
   },
   { _id: false }

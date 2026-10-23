@@ -2,7 +2,11 @@ import Post from '../models/Post.js';
 import User from '../models/User.js';
 import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
 import { createNotification } from '../utils/createNotification.js';
-import { readMediaMetadata } from '../utils/mediaMetadata.js';
+import {
+  readMediaMetadata,
+  MAX_VIDEO_BYTES_PER_SECOND,
+  MAX_VIDEO_SIZE_BYTES,
+} from '../utils/mediaMetadata.js';
 
 // @desc    Create a new post
 // @route   POST /api/posts
@@ -19,7 +23,17 @@ export const createPost = async (req, res) => {
         metadata = await readMediaMetadata(req.file);
       } catch (error) {
         console.warn('Unable to read uploaded post media:', error.message);
-        return res.status(400).json({ message: 'Could not read this image or video. Please choose another file.' });
+        return res.status(400).json({
+          message: error.message || 'Could not read this image or video. Please choose another file.',
+        });
+      }
+      if (
+        metadata.type === 'video' &&
+        (req.file.size > MAX_VIDEO_SIZE_BYTES || req.file.size > metadata.duration * MAX_VIDEO_BYTES_PER_SECOND)
+      ) {
+        return res.status(400).json({
+          message: 'This video is too large for its duration. Maximum average size is 100MB for 60 seconds.',
+        });
       }
       const { url } = await uploadFileToS3(req.file, 'posts');
       media = { url, ...metadata };

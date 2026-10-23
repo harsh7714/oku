@@ -44,7 +44,7 @@ const MediaRenderer = ({
     ? Math.abs(Math.log(sourceRatio / REEL_RATIO)) < 0.08
     : false;
   const fit = mode === 'thumbnail'
-    ? (ratioMatchesFrame ? 'cover' : 'contain')
+    ? 'cover'
     : mode === 'reel'
       ? (reelPortrait && reelCloseToFrame ? 'cover' : 'contain')
       : (ratioMatchesFrame ? 'cover' : 'contain');

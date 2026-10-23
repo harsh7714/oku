@@ -4,7 +4,11 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getAvatarUrl } from '../utils/mediaUrl';
-import { readLocalMediaDimensions } from '../utils/mediaMetadata';
+import {
+  readLocalMediaDimensions,
+  MAX_VIDEO_BYTES_PER_SECOND,
+  MAX_VIDEO_SIZE_BYTES,
+} from '../utils/mediaMetadata';
 import MentionInput from './MentionInput';
 import './CreatePostBox.css';
 
@@ -42,11 +46,22 @@ const CreatePostBox = ({ onPostCreated }) => {
 
     try {
       const dimensions = await readLocalMediaDimensions(file, nextType);
-      if (requestId === metadataRequestRef.current) setMediaDimensions(dimensions);
+      if (requestId === metadataRequestRef.current) {
+        if (
+          nextType === 'video' &&
+          (file.size > MAX_VIDEO_SIZE_BYTES || file.size > dimensions.duration * MAX_VIDEO_BYTES_PER_SECOND)
+        ) {
+          throw new Error(
+            `This video is too large for its ${Math.ceil(dimensions.duration)} second duration. ` +
+            'Use a smaller file or a shorter video.'
+          );
+        }
+        setMediaDimensions(dimensions);
+      }
     } catch (error) {
       if (requestId === metadataRequestRef.current) {
         console.error('Unable to read selected media dimensions:', error);
-        toast.error('Could not read this image or video. Please choose another file.');
+        toast.error(error.message || 'Could not read this image or video. Please choose another file.');
         removeMedia();
       }
     } finally {
@@ -90,14 +105,12 @@ const CreatePostBox = ({ onPostCreated }) => {
         formData.append('height', String(mediaDimensions.height));
         formData.append('aspectRatio', String(mediaDimensions.aspectRatio));
         formData.append('orientation', mediaDimensions.orientation);
+        if (mediaDimensions.duration) formData.append('duration', String(mediaDimensions.duration));
       }
     }
 
     try {
       const { data } = await api.post('/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
       });
       setContent('');
       removeMedia();
