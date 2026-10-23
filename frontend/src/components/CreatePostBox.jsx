@@ -6,7 +6,6 @@ import { useToast } from '../context/ToastContext';
 import { getAvatarUrl } from '../utils/mediaUrl';
 import {
   readLocalMediaDimensions,
-  MAX_VIDEO_BYTES_PER_SECOND,
   MAX_VIDEO_SIZE_BYTES,
 } from '../utils/mediaMetadata';
 import MentionInput from './MentionInput';
@@ -47,13 +46,9 @@ const CreatePostBox = ({ onPostCreated }) => {
     try {
       const dimensions = await readLocalMediaDimensions(file, nextType);
       if (requestId === metadataRequestRef.current) {
-        if (
-          nextType === 'video' &&
-          (file.size > MAX_VIDEO_SIZE_BYTES || file.size > dimensions.duration * MAX_VIDEO_BYTES_PER_SECOND)
-        ) {
+        if (nextType === 'video' && file.size > MAX_VIDEO_SIZE_BYTES) {
           throw new Error(
-            `This video is too large for its ${Math.ceil(dimensions.duration)} second duration. ` +
-            'Use a smaller file or a shorter video.'
+            'This video is too large. Maximum video size is 100MB for videos up to 60 seconds.'
           );
         }
         setMediaDimensions(dimensions);

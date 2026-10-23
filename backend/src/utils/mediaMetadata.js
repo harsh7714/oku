@@ -11,7 +11,6 @@ const ffprobePath = typeof ffprobeStatic === 'string' ? ffprobeStatic : ffprobeS
 
 export const MAX_VIDEO_DURATION_SECONDS = 60;
 export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
-export const MAX_VIDEO_BYTES_PER_SECOND = MAX_VIDEO_SIZE_BYTES / MAX_VIDEO_DURATION_SECONDS;
 
 export const getOrientation = (aspectRatio) => {
   if (aspectRatio < 0.95) return 'portrait';

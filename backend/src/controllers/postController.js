@@ -4,7 +4,6 @@ import { uploadFileToS3, deleteFileFromS3 } from '../utils/s3Upload.js';
 import { createNotification } from '../utils/createNotification.js';
 import {
   readMediaMetadata,
-  MAX_VIDEO_BYTES_PER_SECOND,
   MAX_VIDEO_SIZE_BYTES,
 } from '../utils/mediaMetadata.js';
 
@@ -27,12 +26,9 @@ export const createPost = async (req, res) => {
           message: error.message || 'Could not read this image or video. Please choose another file.',
         });
       }
-      if (
-        metadata.type === 'video' &&
-        (req.file.size > MAX_VIDEO_SIZE_BYTES || req.file.size > metadata.duration * MAX_VIDEO_BYTES_PER_SECOND)
-      ) {
+      if (metadata.type === 'video' && req.file.size > MAX_VIDEO_SIZE_BYTES) {
         return res.status(400).json({
-          message: 'This video is too large for its duration. Maximum average size is 100MB for 60 seconds.',
+          message: 'This video is too large. Maximum video size is 100MB for videos up to 60 seconds.',
         });
       }
       const { url } = await uploadFileToS3(req.file, 'posts');
