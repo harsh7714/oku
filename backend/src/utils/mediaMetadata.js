@@ -52,7 +52,7 @@ const readVideoMetadata = async (file) => {
       [
         '-v', 'error',
         '-select_streams', 'v:0',
-        '-show_entries', 'stream=width,height,duration:stream_tags=rotate:stream_side_data=rotation:format=duration',
+        '-show_entries', 'stream=width,height,duration:stream_tags=rotate:format=duration',
         '-of', 'json',
         tempFile,
       ],
